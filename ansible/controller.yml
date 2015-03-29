@@ -1,0 +1,10 @@
+---
+# OpenStack Controller
+
+- hosts: controller
+  roles:
+    - common
+    - docker
+    - database
+    - messaging
+

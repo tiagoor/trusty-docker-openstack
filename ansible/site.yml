@@ -1,0 +1,6 @@
+---
+# Deploy OpenStack.
+
+- include: controller.yml
+- include: network.yml
+- include: compute.yml

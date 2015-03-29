@@ -1,0 +1,6 @@
+---
+# Common settings
+
+database_root_password: password
+# Currently RabbitMQ password is not able to change.
+#messaging_password: guest

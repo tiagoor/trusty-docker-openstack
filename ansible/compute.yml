@@ -1,0 +1,7 @@
+---
+# OpenStack Compute
+
+- hosts: compute1
+  roles:
+    - common
+    - nodes

@@ -1,0 +1,13 @@
+---
+# Install Database service
+
+- name: check MySQL install
+  shell: docker ps -a | grep -q openstack-mysql
+  register: result
+  ignore_errors: True
+  sudo: yes
+
+- name: install MySQL if not
+  command: docker run --net=host --name openstack-mysql -e MYSQL_ROOT_PASSWORD={{ database_root_password }} -d mysql:latest
+  when: result|failed
+  sudo: yes
