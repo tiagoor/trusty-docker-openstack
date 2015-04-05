@@ -1,6 +1,21 @@
 ---
 # Common settings
 
+openstack_database_ip: 10.0.0.11
 database_root_password: password
+
+openstack_messaging_ip: 10.0.0.11
 # Currently RabbitMQ password is not able to change.
 #messaging_password: guest
+
+dockerfile_install_dir: /opt/docker
+openstack_log_dir: /var/log/openstack
+
+openstack_admin_password: openstack
+openstack_demo_password: openstack
+
+keystone_docker_image: kiyoad/keystone
+keystone_ip: 10.0.0.11
+keystone_admin_token: ADMIN_TOKEN
+keystone_db_password: KEYSTONE_DBPASS
+
