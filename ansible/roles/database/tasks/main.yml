@@ -9,7 +9,7 @@
   register: result
   ignore_errors: True
 
-- name: install MySQL if not
+- name: install MySQL
   shell: docker run --net=host --name openstack-mysql -e MYSQL_ROOT_PASSWORD={{ database_root_password }} -d mysql:latest
   when: result|failed
 

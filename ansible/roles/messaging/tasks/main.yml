@@ -6,6 +6,6 @@
   register: result
   ignore_errors: True
 
-- name: install RabbitMQ if not
+- name: install RabbitMQ
   command: docker run --net=host --name openstack-rabbitmq -e RABBITMQ_NODENAME=openstack-rabbitmq -d rabbitmq:latest
   when: result|failed
