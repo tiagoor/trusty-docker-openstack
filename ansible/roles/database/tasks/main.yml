@@ -13,6 +13,7 @@
   shell: docker run --net=host --name openstack-mysql -e MYSQL_ROOT_PASSWORD={{ database_root_password }} -d mysql:latest
   when: result|failed
 
+# Keystone
 - name: check keystone database
   shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "show databases;" | grep -q keystone
   register: result
@@ -24,4 +25,18 @@
 
 - name: install initial keystone database
   shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "source /tmp/init_keystone.sql;"
+  when: result|failed
+
+# Glance
+- name: check glance database
+  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "show databases;" | grep -q glance
+  register: result
+  ignore_errors: True
+
+- name: create initial glance database
+  template: src=init_glance.sql.j2 dest=/tmp/init_glance.sql
+  when: result|failed
+
+- name: install initial glance database
+  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "source /tmp/init_glance.sql;"
   when: result|failed
