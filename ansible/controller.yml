@@ -8,4 +8,5 @@
     - database
     - messaging
     - keystone
+    - glance
   sudo: yes
