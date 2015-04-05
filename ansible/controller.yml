@@ -7,4 +7,5 @@
     - docker
     - database
     - messaging
-
+    - keystone
+  sudo: yes

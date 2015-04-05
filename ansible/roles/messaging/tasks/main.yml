@@ -5,9 +5,7 @@
   shell: docker ps -a | grep -q openstack-rabbitmq
   register: result
   ignore_errors: True
-  sudo: yes
 
 - name: install RabbitMQ if not
   command: docker run --net=host --name openstack-rabbitmq -e RABBITMQ_NODENAME=openstack-rabbitmq -d rabbitmq:latest
   when: result|failed
-  sudo: yes

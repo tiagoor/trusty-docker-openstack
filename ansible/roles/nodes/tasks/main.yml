@@ -3,4 +3,3 @@
 
 - name: install python-mysqldb
   apt: name=python-mysqldb
-  sudo: yes

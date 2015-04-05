@@ -3,8 +3,6 @@
 
 - name: install docker
   apt: name=docker.io
-  sudo: yes
 
 - name: join a user in the docker group
   command: addgroup vagrant docker
-  sudo: yes

@@ -3,12 +3,9 @@
 
 - name: default package upgrade
   apt: upgrade=yes update_cache=yes cache_valid_time=86400
-  sudo: yes
 
 - name: copy /etc/hosts
   copy: src=../files/hosts dest=/etc/hosts owner=root mode=0644
-  sudo: yes
 
 - name: install ntpd
   apt: name=ntp
-  sudo: yes
