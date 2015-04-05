@@ -1,0 +1,32 @@
+---
+# Install Glance
+
+- name: check Glance running
+  shell: docker ps | grep -q {{ glance_docker_image }}
+  register: glance_is_running
+  ignore_errors: True
+
+- name: make Glance Dockerfile directory
+  shell: mkdir -p {{ dockerfile_install_dir }}/glance
+  when: glance_is_running|failed
+
+- name: install Glance Dockerfile
+  template: src=Dockerfile.j2 dest={{ dockerfile_install_dir }}/glance/Dockerfile
+  when: glance_is_running|failed
+
+- name: build Glance Dockerfile
+  shell: docker build -t {{ glance_docker_image }} . > docker_build.log 2>&1
+  args:
+    chdir: "{{ dockerfile_install_dir }}/glance"
+  when: glance_is_running|failed
+
+- name: create log directory
+  shell: mkdir -p {{ openstack_log_dir }}/glance && chmod 0777 {{ openstack_log_dir }}/glance
+  when: glance_is_running|failed
+
+# - name: start Glance
+#   shell: docker run --name=glance --net=host -v /var/log/openstack/glance:/var/log/glance -d -e GLANCE_DATABASE_IP={{ openstack_database_ip }} {{ glance_docker_image }}
+#   when: glance_is_running|failed
+
+- name: install Glance client
+  apt: name=python-glanceclient
