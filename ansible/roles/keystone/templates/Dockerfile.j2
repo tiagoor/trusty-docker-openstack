@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 RUN \
   apt-get update && apt-get upgrade -y && \
-  apt-get install -qy wget python-mysqldb mysql-client && \
+  apt-get install -qy wget python-mysqldb mysql-client monit && \
   mkdir .build_pip && \
   (cd .build_pip && wget -q https://bootstrap.pypa.io/get-pip.py && python get-pip.py && cd ..) && \
   pip install crudini
@@ -15,32 +15,9 @@ RUN \
   rm -rf /var/lib/keystone/keystone.db && \
   rm -rf /var/lib/apt/lists/*
 
-RUN \
-  export launcher=/usr/local/bin/service_launcher && \
-  echo "#!/bin/bash" > ${launcher} && \
-  echo "set -eux" >> ${launcher} && \
-  echo '# ---------------------------------------------------------------------------' >> ${launcher} && \
-  echo '# modify config file' >> ${launcher} && \
-  echo '# ---------------------------------------------------------------------------' >> ${launcher} && \
-  echo 'crudini --set /etc/keystone/keystone.conf database connection mysql://keystone:{{ keystone_db_password }}@${KEYSTONE_DATABASE_IP}/keystone' >> ${launcher} && \
-  echo 'crudini --set /etc/keystone/keystone.conf DEFAULT admin_token {{ keystone_admin_token }}' >> ${launcher} && \
-  echo 'crudini --set /etc/keystone/keystone.conf DEFAULT log_dir /var/log/keystone' >> ${launcher} && \
-  echo 'crudini --set /etc/keystone/keystone.conf DEFAULT debug true' >> ${launcher} && \
-  echo '# ---------------------------------------------------------------------------' >> ${launcher} && \
-  echo '# database initialization' >> ${launcher} && \
-  echo '# ---------------------------------------------------------------------------' >> ${launcher} && \
-  echo 'if ! mysql -h ${KEYSTONE_DATABASE_IP} -uroot -p{{ database_root_password }} keystone -e "show tables;" | grep -q keystone ; then' >> ${launcher} && \
-  echo '  sudo -u keystone -g keystone keystone-manage db_sync' >> ${launcher} && \
-  echo 'fi' >> ${launcher} && \
-  echo '# ---------------------------------------------------------------------------' >> ${launcher} && \
-  echo '# add special crontab' >> ${launcher} && \
-  echo '# ---------------------------------------------------------------------------' >> ${launcher} && \
-  echo '(crontab -l -u keystone 2>&1 | grep -q token_flush) || echo "@hourly /usr/bin/keystone-manage token_flush >/var/log/keystone/keystone-tokenflush.log 2>&1" >> /var/spool/cron/crontabs/keystone' >> ${launcher} && \
-  echo '# ---------------------------------------------------------------------------' >> ${launcher} && \
-  echo '# start service' >> ${launcher} && \
-  echo '# ---------------------------------------------------------------------------' >> ${launcher} && \
-  echo 'exec start-stop-daemon --start --chuid keystone --chdir /var/lib/keystone --name keystone --exec /usr/bin/keystone-all' >> ${launcher} && \
-  chmod 0755 ${launcher}
+ADD service_launcher.sh /usr/local/bin/service_launcher.sh
+RUN chmod 0755 /usr/local/bin/service_launcher.sh
+ADD monit_keystone.conf /etc/monit/conf.d/keystone.conf
 
 #CMD [ "bash" ]
-CMD [ "service_launcher" ]
+CMD [ "service_launcher.sh" ]

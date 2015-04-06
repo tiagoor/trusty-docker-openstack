@@ -1,0 +1,25 @@
+#!/bin/bash
+set -eux
+# ---------------------------------------------------------------------------
+# modify config file
+# ---------------------------------------------------------------------------
+crudini --set /etc/keystone/keystone.conf database connection mysql://keystone:{{ keystone_db_password }}@${KEYSTONE_DATABASE_IP}/keystone
+crudini --set /etc/keystone/keystone.conf DEFAULT admin_token {{ keystone_admin_token }}
+crudini --set /etc/keystone/keystone.conf DEFAULT log_dir /var/log/keystone
+crudini --set /etc/keystone/keystone.conf DEFAULT debug true
+# ---------------------------------------------------------------------------
+# database initialization
+# ---------------------------------------------------------------------------
+if ! mysql -h ${KEYSTONE_DATABASE_IP} -uroot -p{{ database_root_password }} keystone -e "show tables;" | grep -q keystone ;
+then
+  sudo -u keystone -g keystone keystone-manage db_sync
+fi
+# ---------------------------------------------------------------------------
+# add special crontab
+# ---------------------------------------------------------------------------
+(crontab -l -u keystone 2>&1 | grep -q token_flush) || \
+  echo "@hourly /usr/bin/keystone-manage token_flush >/var/log/keystone/keystone-tokenflush.log 2>&1" >> /var/spool/cron/crontabs/keystone
+# ---------------------------------------------------------------------------
+# start service
+# ---------------------------------------------------------------------------
+start-stop-daemon --start --quiet --oknodo --pidfile /var/run/monit.pid --exec /usr/bin/monit -- -I -c /etc/monit/monitrc

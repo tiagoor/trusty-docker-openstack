@@ -14,6 +14,14 @@
   template: src=Dockerfile.j2 dest={{ dockerfile_install_dir }}/keystone/Dockerfile
   when: keystone_is_running|failed
 
+- name: install service_launcher.sh
+  template: src=service_launcher.sh.j2 dest={{ dockerfile_install_dir }}/keystone/service_launcher.sh
+  when: keystone_is_running|failed
+
+- name: install monit.conf
+  template: src=monit_keystone.conf.j2 dest={{ dockerfile_install_dir }}/keystone/monit_keystone.conf
+  when: keystone_is_running|failed
+
 - name: build Keystone Dockerfile
   shell: docker build -t {{ keystone_docker_image }} . > docker_build.log 2>&1
   args:
@@ -26,6 +34,10 @@
 
 - name: start Keystone
   shell: docker run --name=keystone --net=host -v /var/log/openstack/keystone:/var/log/keystone -d -e KEYSTONE_DATABASE_IP={{ openstack_database_ip }} {{ keystone_docker_image }}
+  when: keystone_is_running|failed
+
+- name: wait Keystone
+  shell: sleep 5
   when: keystone_is_running|failed
 
 - name: install Keystone client
