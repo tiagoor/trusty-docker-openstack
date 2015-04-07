@@ -14,6 +14,18 @@
   template: src=Dockerfile.j2 dest={{ dockerfile_install_dir }}/glance/Dockerfile
   when: glance_is_running|failed
 
+- name: install service_launcher.sh
+  template: src=service_launcher.sh.j2 dest={{ dockerfile_install_dir }}/glance/service_launcher.sh
+  when: glance_is_running|failed
+
+- name: install monit.conf(1)
+  template: src=monit_glance-api.conf.j2 dest={{ dockerfile_install_dir }}/glance/monit_glance-api.conf
+  when: glance_is_running|failed
+
+- name: install monit.conf(2)
+  template: src=monit_glance-registry.conf.j2 dest={{ dockerfile_install_dir }}/glance/monit_glance-registry.conf
+  when: glance_is_running|failed
+
 - name: build Glance Dockerfile
   shell: docker build -t {{ glance_docker_image }} . > docker_build.log 2>&1
   args:
@@ -24,9 +36,30 @@
   shell: mkdir -p {{ openstack_log_dir }}/glance && chmod 0777 {{ openstack_log_dir }}/glance
   when: glance_is_running|failed
 
-# - name: start Glance
-#   shell: docker run --name=glance --net=host -v /var/log/openstack/glance:/var/log/glance -d -e GLANCE_DATABASE_IP={{ openstack_database_ip }} {{ glance_docker_image }}
-#   when: glance_is_running|failed
+- name: start Glance
+  shell: docker run --name=glance --net=host -v /var/log/openstack/glance:/var/log/glance -d -e GLANCE_DATABASE_IP={{ openstack_database_ip }} -e KEYSTONE_IP={{ keystone_ip }} {{ glance_docker_image }}
+  when: glance_is_running|failed
+
+- name: wait Glance
+  shell: sleep 5
+  when: glance_is_running|failed
 
 - name: install Glance client
   apt: name=python-glanceclient
+
+- name: check glance user
+  shell: keystone --os-username admin --os-password {{ openstack_admin_password }} --os-tenant-name admin --os-auth-url http://{{ keystone_ip }}:35357/v2.0 user-list | grep -q glance
+  register: glance_exist
+  ignore_errors: True
+
+- name: add glance user,role,service and endpoint
+  shell: |
+    export OS_USERNAME=admin
+    export OS_PASSWORD={{ openstack_admin_password }}
+    export OS_TENANT_NAME=admin
+    export OS_AUTH_URL=http://{{ keystone_ip }}:35357/v2.0
+    keystone user-create --name=glance --pass={{ glance_password }} --email=glance@example.com
+    keystone user-role-add --user=glance --tenant=service --role=admin
+    keystone service-create --name=glance --type=image --description="OpenStack Image Service"
+    keystone endpoint-create --service-id=$(keystone service-list | awk '/ image / {print $2}') --publicurl=http://{{ glance_ip }}:9292 --internalurl=http://{{ glance_ip }}:9292 --adminurl=http://{{ glance_ip }}:9292
+  when: glance_exist|failed

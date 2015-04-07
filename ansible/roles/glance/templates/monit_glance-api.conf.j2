@@ -1,0 +1,3 @@
+check process glance-api with pidfile /var/run/glance-api.pid
+  start program = "/sbin/start-stop-daemon --start --quiet --background --pidfile /var/run/glance-api.pid --chuid glance --chdir /var/lib/glance --name glance-api --exec /usr/bin/glance-api"
+  stop program  = "/sbin/start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile /var/run/glance-api.pid --name glance-api"
