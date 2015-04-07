@@ -21,5 +21,5 @@ keystone_db_password: KEYSTONE_DBPASS
 
 glance_docker_image: kiyoad/glance
 glance_ip: 10.0.0.11
-glance_admin_token: ADMIN_TOKEN
+glance_password: GLANCE_PASS
 glance_db_password: GLANCE_DBPASS
