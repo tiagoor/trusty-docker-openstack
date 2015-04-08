@@ -1,0 +1,3 @@
+check process nova-consoleauth with pidfile /var/run/nova-consoleauth.pid
+  start program = "/sbin/start-stop-daemon --start --quiet --background --pidfile /var/run/nova-consoleauth.pid --chuid nova --chdir /var/run --name nova-consoleauth --exec /usr/bin/nova-consoleauth -- --config-file=/etc/nova/nova.conf"
+  stop program  = "/sbin/start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile /var/run/nova-consoleauth.pid --name nova-consoleauth"

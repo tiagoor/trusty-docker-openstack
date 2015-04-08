@@ -1,0 +1,28 @@
+FROM ubuntu:trusty
+MAINTAINER KIYOHIRO ADACHI <kiyoad@da2.so-net.ne.jp>
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN \
+  apt-get update && apt-get upgrade -y && \
+  apt-get install -qy wget python-mysqldb mysql-client monit && \
+  mkdir .build_pip && \
+  (cd .build_pip && wget -q https://bootstrap.pypa.io/get-pip.py && python get-pip.py && cd ..) && \
+  pip install crudini
+
+RUN \
+  apt-get install -qy nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler && \
+  rm -rf /var/lib/nova/nova.sqlite && \
+  rm -rf /var/lib/apt/lists/*
+
+ADD service_launcher.sh /usr/local/bin/service_launcher.sh
+RUN chmod 0755 /usr/local/bin/service_launcher.sh
+ADD monit_nova-api.conf /etc/monit/conf.d/nova-api.conf
+ADD monit_nova-cert.conf /etc/monit/conf.d/nova-cert.conf
+ADD monit_nova-consoleauth.conf /etc/monit/conf.d/nova-consoleauth.conf
+ADD monit_nova-scheduler.conf /etc/monit/conf.d/nova-scheduler.conf
+ADD monit_nova-conductor.conf /etc/monit/conf.d/nova-conductor.conf
+ADD monit_nova-novncproxy.conf /etc/monit/conf.d/nova-novncproxy.conf
+
+#CMD [ "bash" ]
+CMD [ "service_launcher.sh" ]

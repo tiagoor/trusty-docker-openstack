@@ -6,7 +6,7 @@ database_root_password: password
 
 openstack_messaging_ip: 10.0.0.11
 # Currently RabbitMQ password is not able to change.
-#messaging_password: guest
+messaging_password: guest
 
 dockerfile_install_dir: /opt/docker
 openstack_log_dir: /var/log/openstack
@@ -23,3 +23,8 @@ glance_docker_image: kiyoad/glance
 glance_ip: 10.0.0.11
 glance_password: GLANCE_PASS
 glance_db_password: GLANCE_DBPASS
+
+nova_docker_image: kiyoad/nova
+nova_ip: 10.0.0.11
+nova_password: NOVA_PASS
+nova_db_password: NOVA_DBPASS

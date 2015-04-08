@@ -1,0 +1,41 @@
+#!/bin/bash
+set -eux
+# ---------------------------------------------------------------------------
+# modify config file
+# ---------------------------------------------------------------------------
+crudini --set /etc/nova/nova.conf DEFAULT debug True
+crudini --set /etc/nova/nova.conf DEFAULT rpc_backend rabbit
+crudini --set /etc/nova/nova.conf DEFAULT rabbit_hosts {{ openstack_messaging_ip }}
+crudini --set /etc/nova/nova.conf DEFAULT rabbit_password {{ messaging_password }}
+crudini --set /etc/nova/nova.conf DEFAULT my_ip {{ nova_ip }}
+crudini --set /etc/nova/nova.conf DEFAULT vncserver_listen {{ nova_ip }}
+crudini --set /etc/nova/nova.conf DEFAULT vncserver_proxyclient_address {{ nova_ip }}
+crudini --set /etc/nova/nova.conf DEFAULT auth_strategy keystone
+
+crudini --set /etc/nova/nova.conf DEFAULT network_api_class nova.network.neutronv2.api.API
+
+crudini --set /etc/nova/nova.conf database connection mysql://nova:{{ nova_db_password }}@${NOVA_DATABASE_IP}/nova
+crudini --set /etc/nova/nova.conf keystone_authtoken auth_host ${KEYSTONE_IP}
+crudini --set /etc/nova/nova.conf keystone_authtoken auth_port 35357
+crudini --set /etc/nova/nova.conf keystone_authtoken auth_protocol http
+crudini --set /etc/nova/nova.conf keystone_authtoken admin_tenant_name service
+crudini --set /etc/nova/nova.conf keystone_authtoken admin_user nova
+crudini --set /etc/nova/nova.conf keystone_authtoken admin_password {{ nova_password }}
+# ---------------------------------------------------------------------------
+# database initialization
+# ---------------------------------------------------------------------------
+if ! mysql -h ${NOVA_DATABASE_IP} -uroot -p{{ database_root_password }} nova -e "show tables;" | grep -q nova ;
+then
+  sudo -u nova -g nova nova-manage db sync
+fi
+# ---------------------------------------------------------------------------
+# create work directories
+# ---------------------------------------------------------------------------
+mkdir -p /var/run/nova
+chown nova:root /var/run/nova/
+mkdir -p /var/lock/nova
+chown nova:root /var/lock/nova/
+# ---------------------------------------------------------------------------
+# start service
+# ---------------------------------------------------------------------------
+start-stop-daemon --start --quiet --oknodo --pidfile /var/run/monit.pid --exec /usr/bin/monit -- -I -c /etc/monit/monitrc

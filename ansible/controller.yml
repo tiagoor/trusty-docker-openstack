@@ -9,4 +9,5 @@
     - messaging
     - keystone
     - glance
+    - nova
   sudo: yes
