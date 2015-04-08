@@ -40,10 +40,6 @@
   shell: docker run --name=glance --net=host -v /var/log/openstack/glance:/var/log/glance -d -e GLANCE_DATABASE_IP={{ openstack_database_ip }} -e KEYSTONE_IP={{ keystone_ip }} {{ glance_docker_image }}
   when: glance_is_running|failed
 
-- name: wait Glance
-  shell: sleep 5
-  when: glance_is_running|failed
-
 - name: install Glance client
   apt: name=python-glanceclient
 
