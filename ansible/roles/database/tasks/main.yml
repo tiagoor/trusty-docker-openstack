@@ -40,3 +40,17 @@
 - name: install initial glance database
   shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "source /tmp/init_glance.sql;"
   when: result|failed
+
+# Nova
+- name: check nova database
+  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "show databases;" | grep -q nova
+  register: result
+  ignore_errors: True
+
+- name: create initial nova database
+  template: src=init_nova.sql.j2 dest=/tmp/init_nova.sql
+  when: result|failed
+
+- name: install initial nova database
+  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "source /tmp/init_nova.sql;"
+  when: result|failed
