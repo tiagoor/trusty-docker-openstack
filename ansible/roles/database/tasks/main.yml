@@ -13,6 +13,10 @@
   shell: docker run --net=host --name openstack-mysql -e MYSQL_ROOT_PASSWORD={{ database_root_password }} -d mysql:latest
   when: result|failed
 
+- name: wait MySQL start
+  shell: sleep 5
+  when: result|failed
+
 # Keystone
 - name: check keystone database
   shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "show databases;" | grep -q keystone
