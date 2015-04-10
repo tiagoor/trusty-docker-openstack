@@ -1,3 +1,3 @@
 check process glance-registry with pidfile /var/run/glance-registry.pid
-  start program = "/sbin/start-stop-daemon --start --quiet --background --pidfile /var/run/glance-registry.pid --chuid glance --chdir /var/lib/glance --name glance-registry --exec /usr/bin/glance-registry"
+  start program = "/sbin/start-stop-daemon --start --quiet --background --make-pidfile --pidfile /var/run/glance-registry.pid --chuid glance --chdir /var/lib/glance --name glance-registry --exec /usr/bin/glance-registry"
   stop program  = "/sbin/start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile /var/run/glance-registry.pid --name glance-registry"

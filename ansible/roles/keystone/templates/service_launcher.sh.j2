@@ -22,4 +22,4 @@ fi
 # ---------------------------------------------------------------------------
 # start service
 # ---------------------------------------------------------------------------
-start-stop-daemon --start --quiet --oknodo --pidfile /var/run/monit.pid --exec /usr/bin/monit -- -I -c /etc/monit/monitrc
+monit -I -c /etc/monit/monitrc
