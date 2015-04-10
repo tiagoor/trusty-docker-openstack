@@ -30,6 +30,12 @@ crudini --set /etc/nova/nova.conf keystone_authtoken auth_protocol http
 crudini --set /etc/nova/nova.conf keystone_authtoken admin_tenant_name service
 crudini --set /etc/nova/nova.conf keystone_authtoken admin_user nova
 crudini --set /etc/nova/nova.conf keystone_authtoken admin_password {{ nova_password }}
+
+crudini --set /etc/nova/nova.conf DEFAULT osapi_compute_workers 4
+crudini --set /etc/nova/nova.conf DEFAULT ec2_workers 4
+crudini --set /etc/nova/nova.conf DEFAULT metadata_workers 4
+crudini --set /etc/nova/nova.conf conductor workers 4
+
 # ---------------------------------------------------------------------------
 # database initialization
 # ---------------------------------------------------------------------------
