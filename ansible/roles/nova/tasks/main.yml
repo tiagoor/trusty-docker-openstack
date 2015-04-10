@@ -53,7 +53,7 @@
   when: nova_is_running|failed
 
 - name: start Nova
-  shell: docker run --name=nova --privileged --net=host -v /var/log/openstack/nova:/var/log/nova -d -e NOVA_DATABASE_IP={{ openstack_database_ip }} -e KEYSTONE_IP={{ keystone_ip }} {{ nova_docker_image }}
+  shell: docker run --name=nova --privileged --net=host -v /var/log/openstack/nova:/var/log/nova -d -e NOVA_DATABASE_IP={{ openstack_database_ip }} -e KEYSTONE_IP={{ keystone_ip }} -e NEUTRON_IP={{ neutron_ip }} {{ nova_docker_image }}
   when: nova_is_running|failed
 
 - name: install Nova client
