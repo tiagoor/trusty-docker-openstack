@@ -1,0 +1,66 @@
+---
+# Install Neutron
+
+- name: check Neutron running
+  shell: docker ps | grep -q {{ neutron_docker_image }}
+  register: neutron_is_running
+  ignore_errors: True
+
+- name: make Neutron Dockerfile directory
+  shell: mkdir -p {{ dockerfile_install_dir }}/neutron
+  when: neutron_is_running|failed
+
+- name: install Neutron Dockerfile
+  template: src=Dockerfile.j2 dest={{ dockerfile_install_dir }}/neutron/Dockerfile
+  when: neutron_is_running|failed
+
+- name: install service_launcher.sh
+  template: src=service_launcher.sh.j2 dest={{ dockerfile_install_dir }}/neutron/service_launcher.sh
+  when: neutron_is_running|failed
+
+- name: install monit.conf
+  template: src=monit_neutron-server.conf.j2 dest={{ dockerfile_install_dir }}/neutron/monit_neutron-server.conf
+  when: neutron_is_running|failed
+
+- name: build Neutron Dockerfile
+  shell: docker build -t {{ neutron_docker_image }} . > docker_build.log 2>&1
+  args:
+    chdir: "{{ dockerfile_install_dir }}/neutron"
+  when: neutron_is_running|failed
+
+- name: create log directory
+  shell: mkdir -p {{ openstack_log_dir }}/neutron && chmod 0777 {{ openstack_log_dir }}/neutron
+  when: neutron_is_running|failed
+
+- name: get service tenant id
+  shell: |
+    export OS_USERNAME=admin
+    export OS_PASSWORD={{ openstack_admin_password }}
+    export OS_TENANT_NAME=admin
+    export OS_AUTH_URL=http://{{ keystone_ip }}:35357/v2.0
+    keystone tenant-get service | awk '/ id /{ print $4 }' > /tmp/service_tenant_id
+  when: neutron_is_running|failed
+
+- name: start Neutron
+  shell: docker run --name=neutron --net=host -v /var/log/openstack/neutron:/var/log/neutron -d -e NEUTRON_DATABASE_IP={{ openstack_database_ip }} -e KEYSTONE_IP={{ keystone_ip }} -e SERVICE_TENANT_ID=`cat /tmp/service_tenant_id` {{ neutron_docker_image }}
+  when: neutron_is_running|failed
+
+- name: install Neutron client
+  apt: name=python-neutronclient
+
+- name: check neutron user
+  shell: keystone --os-username admin --os-password {{ openstack_admin_password }} --os-tenant-name admin --os-auth-url http://{{ keystone_ip }}:35357/v2.0 user-list | grep -q neutron
+  register: neutron_exist
+  ignore_errors: True
+
+- name: add neutron user,role,service and endpoint
+  shell: |
+    export OS_USERNAME=admin
+    export OS_PASSWORD={{ openstack_admin_password }}
+    export OS_TENANT_NAME=admin
+    export OS_AUTH_URL=http://{{ keystone_ip }}:35357/v2.0
+    keystone user-create --name=neutron --pass={{ neutron_password }} --email=neutron@example.com
+    keystone user-role-add --user=neutron --tenant=service --role=admin
+    keystone service-create --name=neutron --type=network --description="OpenStack Networking"
+    keystone endpoint-create --service-id=$(keystone service-list | awk '/ network / {print $2}') --publicurl=http://{{ neutron_ip }}:9696 --internalurl=http://{{ neutron_ip }}:9696 --adminurl=http://{{ neutron_ip }}:9696
+  when: neutron_exist|failed

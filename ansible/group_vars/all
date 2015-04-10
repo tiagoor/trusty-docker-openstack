@@ -28,3 +28,8 @@ nova_docker_image: kiyoad/nova
 nova_ip: 10.0.0.11
 nova_password: NOVA_PASS
 nova_db_password: NOVA_DBPASS
+
+neutron_docker_image: kiyoad/neutron
+neutron_ip: 10.0.0.11
+neutron_password: NEUTRON_PASS
+neutron_db_password: NEUTRON_DBPASS

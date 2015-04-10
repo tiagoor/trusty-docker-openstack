@@ -1,0 +1,22 @@
+FROM ubuntu:trusty
+MAINTAINER KIYOHIRO ADACHI <kiyoad@da2.so-net.ne.jp>
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN \
+  apt-get update && apt-get upgrade -y && \
+  apt-get install -qy wget python-mysqldb mysql-client monit && \
+  mkdir .build_pip && \
+  (cd .build_pip && wget -q https://bootstrap.pypa.io/get-pip.py && python get-pip.py && cd ..) && \
+  pip install crudini
+
+RUN \
+  apt-get install -qy neutron-server neutron-plugin-ml2 && \
+  rm -rf /var/lib/apt/lists/*
+
+ADD service_launcher.sh /usr/local/bin/service_launcher.sh
+RUN chmod 0755 /usr/local/bin/service_launcher.sh
+ADD monit_neutron-server.conf /etc/monit/conf.d/neutron-server.conf
+
+#CMD [ "bash" ]
+CMD [ "service_launcher.sh" ]

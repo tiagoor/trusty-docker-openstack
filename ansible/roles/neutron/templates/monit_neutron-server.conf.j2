@@ -1,0 +1,3 @@
+check process neutron-server with pidfile /var/run/neutron-server.pid
+  start program = "/sbin/start-stop-daemon --start --quiet --background --make-pidfile --pidfile /var/run/neutron-server.pid --chuid neutron --chdir /var/run --name neutron-server --exec /usr/bin/neutron-server -- --config-file /etc/neutron/neutron.conf --log-file /var/log/neutron/server.log --config-file /etc/neutron/plugins/ml2/ml2_conf.ini"
+  stop program  = "/sbin/start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile /var/run/neutron-server.pid --name neutron-server"

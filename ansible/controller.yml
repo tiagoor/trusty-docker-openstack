@@ -10,4 +10,5 @@
     - keystone
     - glance
     - nova
+    - neutron
   sudo: yes
