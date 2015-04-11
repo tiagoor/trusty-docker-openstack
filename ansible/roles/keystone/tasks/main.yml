@@ -18,8 +18,21 @@
   template: src=service_launcher.sh.j2 dest={{ dockerfile_install_dir }}/keystone/service_launcher.sh
   when: keystone_is_running|failed
 
-- name: install monit.conf
+- name: install monit.conf(1)
   template: src=monit_keystone.conf.j2 dest={{ dockerfile_install_dir }}/keystone/monit_keystone.conf
+  when: keystone_is_running|failed
+
+- name: install monit.conf(2)
+  template: src=monit_openssh-server.conf.j2 dest={{ dockerfile_install_dir }}/keystone/monit_openssh-server.conf
+  when: keystone_is_running|failed
+
+- name: install maintenance ssh config
+  template: src=sshd_config.j2 dest={{ dockerfile_install_dir }}/keystone/sshd_config
+  when: keystone_is_running|failed
+
+- name: create maintenance ssh key
+  shell: echo -e 'n\n' | ssh-keygen -q -t rsa -P '' -f {{ dockerfile_install_dir }}/keystone/maintenance_id_rsa
+  ignore_errors: True
   when: keystone_is_running|failed
 
 - name: build Keystone Dockerfile
@@ -37,7 +50,7 @@
   when: keystone_is_running|failed
 
 - name: wait Keystone
-  shell: sleep 5
+  shell: sleep 10
   when: keystone_is_running|failed
 
 - name: install Keystone client

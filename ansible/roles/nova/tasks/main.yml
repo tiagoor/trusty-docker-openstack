@@ -42,6 +42,19 @@
   template: src=monit_nova-novncproxy.conf.j2 dest={{ dockerfile_install_dir }}/nova/monit_nova-novncproxy.conf
   when: nova_is_running|failed
 
+- name: install monit.conf(7)
+  template: src=monit_openssh-server.conf.j2 dest={{ dockerfile_install_dir }}/nova/monit_openssh-server.conf
+  when: nova_is_running|failed
+
+- name: install maintenance ssh config
+  template: src=sshd_config.j2 dest={{ dockerfile_install_dir }}/nova/sshd_config
+  when: nova_is_running|failed
+
+- name: create maintenance ssh key
+  shell: echo -e 'n\n' | ssh-keygen -q -t rsa -P '' -f {{ dockerfile_install_dir }}/nova/maintenance_id_rsa
+  ignore_errors: True
+  when: nova_is_running|failed
+
 - name: build Nova Dockerfile
   shell: docker build -t {{ nova_docker_image }} . > docker_build.log 2>&1
   args:

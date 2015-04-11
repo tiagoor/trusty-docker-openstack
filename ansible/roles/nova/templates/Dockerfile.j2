@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 RUN \
   apt-get update && apt-get upgrade -y && \
-  apt-get install -qy wget python-mysqldb mysql-client monit && \
+  apt-get install -qy wget python-mysqldb mysql-client monit openssh-server && \
   mkdir .build_pip && \
   (cd .build_pip && wget -q https://bootstrap.pypa.io/get-pip.py && python get-pip.py && cd ..) && \
   pip install crudini
@@ -23,6 +23,19 @@ ADD monit_nova-consoleauth.conf /etc/monit/conf.d/nova-consoleauth.conf
 ADD monit_nova-scheduler.conf /etc/monit/conf.d/nova-scheduler.conf
 ADD monit_nova-conductor.conf /etc/monit/conf.d/nova-conductor.conf
 ADD monit_nova-novncproxy.conf /etc/monit/conf.d/nova-novncproxy.conf
+
+ADD monit_openssh-server.conf /etc/monit/conf.d/openssh-server.conf
+ADD sshd_config /etc/ssh/sshd_config
+ADD maintenance_id_rsa.pub /tmp/maintenance_id_rsa.pub
+
+RUN \
+  mkdir /var/run/sshd && \
+  adduser --disabled-password --gecos "Maintainer" --uid 1000 maintainer && \
+  mkdir /home/maintainer/.ssh && \
+  cp /tmp/maintenance_id_rsa.pub /home/maintainer/.ssh/authorized_keys && \
+  chown -R maintainer:maintainer /home/maintainer && \
+  echo "maintainer ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/maintainer && \
+  chmod 0440 /etc/sudoers.d/maintainer
 
 #CMD [ "bash" ]
 CMD [ "service_launcher.sh" ]

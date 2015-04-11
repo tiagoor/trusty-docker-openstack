@@ -18,18 +18,22 @@ keystone_docker_image: kiyoad/keystone
 keystone_ip: 10.0.0.11
 keystone_admin_token: ADMIN_TOKEN
 keystone_db_password: KEYSTONE_DBPASS
+keystone_maintenance_ssh_port: 65501
 
 glance_docker_image: kiyoad/glance
 glance_ip: 10.0.0.11
 glance_password: GLANCE_PASS
 glance_db_password: GLANCE_DBPASS
+glance_maintenance_ssh_port: 65502
 
 nova_docker_image: kiyoad/nova
 nova_ip: 10.0.0.11
 nova_password: NOVA_PASS
 nova_db_password: NOVA_DBPASS
+nova_maintenance_ssh_port: 65503
 
 neutron_docker_image: kiyoad/neutron
 neutron_ip: 10.0.0.11
 neutron_password: NEUTRON_PASS
 neutron_db_password: NEUTRON_DBPASS
+neutron_maintenance_ssh_port: 65504

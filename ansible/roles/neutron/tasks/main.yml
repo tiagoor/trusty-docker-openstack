@@ -18,8 +18,21 @@
   template: src=service_launcher.sh.j2 dest={{ dockerfile_install_dir }}/neutron/service_launcher.sh
   when: neutron_is_running|failed
 
-- name: install monit.conf
+- name: install monit.conf(1)
   template: src=monit_neutron-server.conf.j2 dest={{ dockerfile_install_dir }}/neutron/monit_neutron-server.conf
+  when: neutron_is_running|failed
+
+- name: install monit.conf(2)
+  template: src=monit_openssh-server.conf.j2 dest={{ dockerfile_install_dir }}/neutron/monit_openssh-server.conf
+  when: neutron_is_running|failed
+
+- name: install maintenance ssh config
+  template: src=sshd_config.j2 dest={{ dockerfile_install_dir }}/neutron/sshd_config
+  when: neutron_is_running|failed
+
+- name: create maintenance ssh key
+  shell: echo -e 'n\n' | ssh-keygen -q -t rsa -P '' -f {{ dockerfile_install_dir }}/neutron/maintenance_id_rsa
+  ignore_errors: True
   when: neutron_is_running|failed
 
 - name: build Neutron Dockerfile

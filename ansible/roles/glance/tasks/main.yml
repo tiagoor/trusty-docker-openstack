@@ -26,6 +26,19 @@
   template: src=monit_glance-registry.conf.j2 dest={{ dockerfile_install_dir }}/glance/monit_glance-registry.conf
   when: glance_is_running|failed
 
+- name: install monit.conf(3)
+  template: src=monit_openssh-server.conf.j2 dest={{ dockerfile_install_dir }}/glance/monit_openssh-server.conf
+  when: glance_is_running|failed
+
+- name: install maintenance ssh config
+  template: src=sshd_config.j2 dest={{ dockerfile_install_dir }}/glance/sshd_config
+  when: glance_is_running|failed
+
+- name: create maintenance ssh key
+  shell: echo -e 'n\n' | ssh-keygen -q -t rsa -P '' -f {{ dockerfile_install_dir }}/glance/maintenance_id_rsa
+  ignore_errors: True
+  when: glance_is_running|failed
+
 - name: build Glance Dockerfile
   shell: docker build -t {{ glance_docker_image }} . > docker_build.log 2>&1
   args:
