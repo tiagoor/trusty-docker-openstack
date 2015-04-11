@@ -42,7 +42,7 @@
   when: neutron_is_running|failed
 
 - name: start Neutron
-  shell: docker run --name=neutron --net=host -v /var/log/openstack/neutron:/var/log/neutron -d -e NEUTRON_DATABASE_IP={{ openstack_database_ip }} -e KEYSTONE_IP={{ keystone_ip }} -e SERVICE_TENANT_ID=`cat /tmp/service_tenant_id` {{ neutron_docker_image }}
+  shell: docker run --name=neutron --net=host -v /var/log/openstack/neutron:/var/log/neutron -d -e NEUTRON_DATABASE_IP={{ openstack_database_ip }} -e MESSAGING_IP={{ openstack_messaging_ip }} -e KEYSTONE_IP={{ keystone_ip }} -e NOVA_IP={{ nova_ip }} -e SERVICE_TENANT_ID=`cat /tmp/service_tenant_id` {{ neutron_docker_image }}
   when: neutron_is_running|failed
 
 - name: install Neutron client

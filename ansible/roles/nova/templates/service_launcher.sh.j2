@@ -5,11 +5,11 @@ set -eux
 # ---------------------------------------------------------------------------
 crudini --set /etc/nova/nova.conf DEFAULT debug True
 crudini --set /etc/nova/nova.conf DEFAULT rpc_backend rabbit
-crudini --set /etc/nova/nova.conf DEFAULT rabbit_hosts {{ openstack_messaging_ip }}
+crudini --set /etc/nova/nova.conf DEFAULT rabbit_hosts ${MESSAGING_IP}
 crudini --set /etc/nova/nova.conf DEFAULT rabbit_password {{ messaging_password }}
-crudini --set /etc/nova/nova.conf DEFAULT my_ip {{ nova_ip }}
-crudini --set /etc/nova/nova.conf DEFAULT vncserver_listen {{ nova_ip }}
-crudini --set /etc/nova/nova.conf DEFAULT vncserver_proxyclient_address {{ nova_ip }}
+crudini --set /etc/nova/nova.conf DEFAULT my_ip ${NOVA_IP}
+crudini --set /etc/nova/nova.conf DEFAULT vncserver_listen ${NOVA_IP}
+crudini --set /etc/nova/nova.conf DEFAULT vncserver_proxyclient_address ${NOVA_IP}
 crudini --set /etc/nova/nova.conf DEFAULT auth_strategy keystone
 
 crudini --set /etc/nova/nova.conf DEFAULT network_api_class nova.network.neutronv2.api.API
