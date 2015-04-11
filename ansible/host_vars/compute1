@@ -1,0 +1,6 @@
+---
+# Host specific settings
+
+my_ip: 10.0.0.31
+instance_tunnels_interface_ip: 10.0.1.31
+

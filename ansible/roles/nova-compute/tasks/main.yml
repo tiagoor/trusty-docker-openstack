@@ -1,0 +1,122 @@
+---
+# Install Nova compute side
+
+- name: install wget
+  apt: name=wget
+
+- name: install crudini
+  shell: |
+    mkdir .build_pip
+    (cd .build_pip && wget -q https://bootstrap.pypa.io/get-pip.py && python get-pip.py && cd ..)
+    pip install crudini
+  args:
+    creates: /usr/local/bin/crudini
+
+- name: install Nova compute component
+  apt: name=nova-compute-kvm
+
+- name: config Nova settings
+  shell: |
+   crudini --set /etc/nova/nova.conf DEFAULT debug True
+   crudini --set /etc/nova/nova.conf DEFAULT rpc_backend rabbit
+   crudini --set /etc/nova/nova.conf DEFAULT rabbit_hosts {{ openstack_messaging_ip }}
+   crudini --set /etc/nova/nova.conf DEFAULT rabbit_password {{ messaging_password }}
+   crudini --set /etc/nova/nova.conf DEFAULT my_ip {{ my_ip }}
+   crudini --set /etc/nova/nova.conf DEFAULT vnc_enabled True
+   crudini --set /etc/nova/nova.conf DEFAULT vncserver_listen 0.0.0.0
+   crudini --set /etc/nova/nova.conf DEFAULT vncserver_proxyclient_address {{ my_ip }}
+   crudini --set /etc/nova/nova.conf DEFAULT novncproxy_base_url http://{{ nova_ip }}:6080/vnc_auto.html
+   crudini --set /etc/nova/nova.conf DEFAULT auth_strategy keystone
+   crudini --set /etc/nova/nova.conf DEFAULT network_api_class nova.network.neutronv2.api.API
+   crudini --set /etc/nova/nova.conf DEFAULT neutron_url http://{{ neutron_ip }}:9696
+   crudini --set /etc/nova/nova.conf DEFAULT neutron_auth_strategy keystone
+   crudini --set /etc/nova/nova.conf DEFAULT neutron_admin_tenant_name service
+   crudini --set /etc/nova/nova.conf DEFAULT neutron_admin_username neutron
+   crudini --set /etc/nova/nova.conf DEFAULT neutron_admin_password {{ neutron_password }}
+   crudini --set /etc/nova/nova.conf DEFAULT neutron_admin_auth_url http://{{ keystone_ip }}:35357/v2.0
+   crudini --set /etc/nova/nova.conf DEFAULT linuxnet_interface_driver nova.network.linux_net.LinuxOVSInterfaceDriver
+   crudini --set /etc/nova/nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
+   crudini --set /etc/nova/nova.conf DEFAULT security_group_api neutron
+   crudini --set /etc/nova/nova.conf database connection mysql://nova:{{ nova_db_password }}@{{ openstack_database_ip }}/nova
+   crudini --set /etc/nova/nova.conf keystone_authtoken auth_host {{ keystone_ip }}
+   crudini --set /etc/nova/nova.conf keystone_authtoken auth_port 35357
+   crudini --set /etc/nova/nova.conf keystone_authtoken auth_protocol http
+   crudini --set /etc/nova/nova.conf keystone_authtoken admin_tenant_name service
+   crudini --set /etc/nova/nova.conf keystone_authtoken admin_user nova
+   crudini --set /etc/nova/nova.conf keystone_authtoken admin_password {{ nova_password }}
+   crudini --set /etc/nova/nova.conf DEFAULT glance_host {{ glance_ip }}
+   crudini --set /etc/nova/nova.conf libvirt virt_type qemu
+   rm -rf /var/lib/nova/nova.sqlite
+
+- name: check kernel networking function
+  shell: grep -q '^net\.ipv4\.conf\.all\.rp_filter' /etc/sysctl.conf
+  register: result
+  ignore_errors: True
+
+- name: change kernel networking function
+  shell: |
+    echo 'net.ipv4.conf.all.rp_filter=0'         >> /etc/sysctl.conf
+    echo 'net.ipv4.conf.default.rp_filter=0'     >> /etc/sysctl.conf
+    echo 'net.bridge.bridge-nf-call-arptables=1' >> /etc/sysctl.conf
+    echo 'net.bridge.bridge-nf-call-iptables=1'  >> /etc/sysctl.conf
+    echo 'net.bridge.bridge-nf-call-ip6tables=1' >> /etc/sysctl.conf
+    sysctl -p
+  when: result|failed
+
+- name: install Neutron components(1)
+  apt: name=neutron-common
+
+- name: install Neutron components(2)
+  apt: name=neutron-plugin-ml2
+
+- name: install Neutron components(3)
+  apt: name=neutron-plugin-openvswitch-agent
+
+- name: install Neutron components(4)
+  apt: name=openvswitch-datapath-dkms
+
+- name: config Neutron settings
+  shell: |
+    crudini --set /etc/neutron/neutron.conf DEFAULT verbos True
+    crudini --set /etc/neutron/neutron.conf DEFAULT debug True
+    crudini --set /etc/neutron/neutron.conf DEFAULT auth_strategy keystone
+    crudini --set /etc/neutron/neutron.conf keystone_authtoken auth_host {{ keystone_ip }}
+    crudini --set /etc/neutron/neutron.conf keystone_authtoken admin_tenant_name service
+    crudini --set /etc/neutron/neutron.conf keystone_authtoken admin_user neutron
+    crudini --set /etc/neutron/neutron.conf keystone_authtoken admin_password {{ neutron_password }}
+    crudini --set /etc/neutron/neutron.conf DEFAULT rpc_backend neutron.openstack.common.rpc.impl_kombu
+    crudini --set /etc/neutron/neutron.conf DEFAULT rabbit_host {{ openstack_messaging_ip }}
+    crudini --set /etc/neutron/neutron.conf DEFAULT rabbit_password {{ messaging_password }}
+    crudini --set /etc/neutron/neutron.conf DEFAULT core_plugin neutron.plugins.ml2.plugin.Ml2Plugin
+    crudini --set /etc/neutron/neutron.conf DEFAULT service_plugins neutron.services.l3_router.l3_router_plugin.L3RouterPlugin
+    crudini --set /etc/neutron/neutron.conf DEFAULT allow_overlapping_ips True
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 type_drivers gre
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 tenant_network_types gre
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 mechanism_drivers openvswitch
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2_type_gre tunnel_id_ranges 1:1000
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ovs local_ip {{ instance_tunnels_interface_ip }}
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ovs tunnel_type gre
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ovs enable_tunneling True
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup enable_security_group True
+
+- name: restart ovs
+  shell: service openvswitch-switch restart
+
+- name: wait ovs
+  shell: sleep 5
+
+- name: check br-int
+  shell: ovs-vsctl list-br | grep -q br-int
+  register: result
+  ignore_errors: True
+
+- name: add br-int
+  shell: ovs-vsctl add-br br-int
+  when: result|failed
+
+- name: restart service(1)
+  service: name=nova-compute enabled=yes state=restarted
+
+- name: restart service(2)
+  service: name=neutron-plugin-openvswitch-agent enabled=yes state=restarted

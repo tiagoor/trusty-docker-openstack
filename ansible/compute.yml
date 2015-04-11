@@ -5,4 +5,5 @@
   roles:
     - common
     - nodes
+    - nova-compute
   sudo: yes
