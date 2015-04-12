@@ -45,7 +45,7 @@
    crudini --set /etc/nova/nova.conf keystone_authtoken admin_user nova
    crudini --set /etc/nova/nova.conf keystone_authtoken admin_password {{ nova_password }}
    crudini --set /etc/nova/nova.conf DEFAULT glance_host {{ glance_ip }}
-   crudini --set /etc/nova/nova.conf libvirt virt_type qemu
+   crudini --set /etc/nova/nova-compute.conf libvirt virt_type qemu
    rm -rf /var/lib/nova/nova.sqlite
 
 - name: check kernel networking function
