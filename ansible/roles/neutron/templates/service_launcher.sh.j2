@@ -5,7 +5,6 @@ set -eux
 # ---------------------------------------------------------------------------
 crudini --set /etc/neutron/neutron.conf DEFAULT verbose True
 crudini --set /etc/neutron/neutron.conf DEFAULT debug True
-crudini --set /etc/neutron/neutron.conf database connection mysql://neutron:{{ neutron_db_password }}@${NEUTRON_DATABASE_IP}/neutron
 crudini --set /etc/neutron/neutron.conf DEFAULT auth_strategy keystone
 crudini --set /etc/neutron/neutron.conf keystone_authtoken auth_host ${KEYSTONE_IP}
 crudini --set /etc/neutron/neutron.conf keystone_authtoken admin_tenant_name service
@@ -31,6 +30,7 @@ crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 mechanism_drivers openvs
 crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2_type_gre tunnel_id_ranges 1:1000
 crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup enable_security_group True
+crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini database connection mysql://neutron:{{ neutron_db_password }}@${NEUTRON_DATABASE_IP}/neutron
 # ---------------------------------------------------------------------------
 # database initialization
 # ---------------------------------------------------------------------------
