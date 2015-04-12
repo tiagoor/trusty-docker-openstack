@@ -19,8 +19,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     conf.vm.hostname = "network.local"
     conf.vm.network :private_network, ip: "10.0.0.21"
     conf.vm.network :private_network, ip: "10.0.1.21"
+    conf.vm.network :public_network,  ip: "0.0.0.0"
     conf.vm.provider :virtualbox do |v|
-      v.customize ["modifyvm", :id, "--memory", "512" ]
+      v.customize ["modifyvm", :id, "--memory", "512",
+                   "--nicpromisc4", "allow-all"]
     end
   end
 

@@ -31,6 +31,7 @@ nova_ip: 10.0.0.11
 nova_password: NOVA_PASS
 nova_db_password: NOVA_DBPASS
 nova_maintenance_ssh_port: 65503
+metadata_proxy_shared_secret: METADATA_SECRET
 
 neutron_docker_image: kiyoad/neutron
 neutron_ip: 10.0.0.11

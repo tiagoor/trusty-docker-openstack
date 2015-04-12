@@ -5,4 +5,5 @@
   roles:
     - common
     - nodes
+    - neutron-networking
   sudo: yes
