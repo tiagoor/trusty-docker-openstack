@@ -38,3 +38,10 @@ neutron_ip: 10.0.0.11
 neutron_password: NEUTRON_PASS
 neutron_db_password: NEUTRON_DBPASS
 neutron_maintenance_ssh_port: 65504
+
+neutron_ext_subnet_allocation_pool_start: 192.168.1.240
+neutron_ext_subnet_allocation_pool_end: 192.168.1.249
+neutron_ext_subnet_gateway: 192.168.1.1
+neutron_ext_subnet_cidr: 192.168.1.0/24
+neutron_demo_subnet_gateway: 192.168.99.1
+neutron_demo_subnet_cidr: 192.168.99.0/24
