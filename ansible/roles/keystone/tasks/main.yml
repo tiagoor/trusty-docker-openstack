@@ -78,11 +78,20 @@
      keystone endpoint-create --service-id=$(keystone service-list | awk '/ identity / {print $2}') --publicurl=http://{{ keystone_ip }}:5000/v2.0 --internalurl=http://{{ keystone_ip }}:5000/v2.0 --adminurl=http://{{ keystone_ip }}:35357/v2.0
   when: admin_exist|failed
 
-- name: create environment variables
+- name: create environment variables for admin
   shell: |
     export env_file=/root/admin-openstack.sh
     echo "export OS_USERNAME=admin"                               >  ${env_file}
     echo "export OS_PASSWORD={{ openstack_admin_password }}"      >> ${env_file}
     echo "export OS_TENANT_NAME=admin"                            >> ${env_file}
+    echo "export OS_AUTH_URL=http://{{ keystone_ip }}:35357/v2.0" >> ${env_file}
+  when: admin_exist|failed
+
+- name: create environment variables for demo
+  shell: |
+    export env_file=/root/demo-openstack.sh
+    echo "export OS_USERNAME=demo"                                >  ${env_file}
+    echo "export OS_PASSWORD={{ openstack_demo_password }}"       >> ${env_file}
+    echo "export OS_TENANT_NAME=demo"                             >> ${env_file}
     echo "export OS_AUTH_URL=http://{{ keystone_ip }}:35357/v2.0" >> ${env_file}
   when: admin_exist|failed
