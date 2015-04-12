@@ -3,7 +3,7 @@ set -eux
 # ---------------------------------------------------------------------------
 # modify config file
 # ---------------------------------------------------------------------------
-crudini --set /etc/neutron/neutron.conf DEFAULT verbos True
+crudini --set /etc/neutron/neutron.conf DEFAULT verbose True
 crudini --set /etc/neutron/neutron.conf DEFAULT debug True
 crudini --set /etc/neutron/neutron.conf database connection mysql://neutron:{{ neutron_db_password }}@${NEUTRON_DATABASE_IP}/neutron
 crudini --set /etc/neutron/neutron.conf DEFAULT auth_strategy keystone

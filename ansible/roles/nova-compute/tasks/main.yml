@@ -77,7 +77,7 @@
 
 - name: config Neutron settings
   shell: |
-    crudini --set /etc/neutron/neutron.conf DEFAULT verbos True
+    crudini --set /etc/neutron/neutron.conf DEFAULT verbose True
     crudini --set /etc/neutron/neutron.conf DEFAULT debug True
     crudini --set /etc/neutron/neutron.conf DEFAULT auth_strategy keystone
     crudini --set /etc/neutron/neutron.conf keystone_authtoken auth_host {{ keystone_ip }}
