@@ -1,0 +1,54 @@
+---
+# Install Dashboard
+
+- name: check Dashboard running
+  shell: docker ps | grep -q {{ dashboard_docker_image }}
+  register: dashboard_is_running
+  ignore_errors: True
+
+- name: make Dashboard Dockerfile directory
+  shell: mkdir -p {{ dockerfile_install_dir }}/dashboard
+  when: dashboard_is_running|failed
+
+- name: install Dashboard Dockerfile
+  template: src=Dockerfile.j2 dest={{ dockerfile_install_dir }}/dashboard/Dockerfile
+  when: dashboard_is_running|failed
+
+- name: install service_launcher.sh
+  template: src=service_launcher.sh.j2 dest={{ dockerfile_install_dir }}/dashboard/service_launcher.sh
+  when: dashboard_is_running|failed
+
+- name: install monit.conf(1)
+  template: src=monit_apache2.conf.j2 dest={{ dockerfile_install_dir }}/dashboard/monit_apache2.conf
+  when: dashboard_is_running|failed
+
+- name: install monit.conf(2)
+  template: src=monit_memcached.conf.j2 dest={{ dockerfile_install_dir }}/dashboard/monit_memcached.conf
+  when: dashboard_is_running|failed
+
+- name: install monit.conf(3)
+  template: src=monit_openssh-server.conf.j2 dest={{ dockerfile_install_dir }}/dashboard/monit_openssh-server.conf
+  when: dashboard_is_running|failed
+
+- name: install maintenance ssh config
+  template: src=sshd_config.j2 dest={{ dockerfile_install_dir }}/dashboard/sshd_config
+  when: dashboard_is_running|failed
+
+- name: create maintenance ssh key
+  shell: echo -e 'n\n' | ssh-keygen -q -t rsa -P '' -f {{ dockerfile_install_dir }}/dashboard/maintenance_id_rsa
+  ignore_errors: True
+  when: dashboard_is_running|failed
+
+- name: build Dashboard Dockerfile
+  shell: docker build -t {{ dashboard_docker_image }} . > docker_build.log 2>&1
+  args:
+    chdir: "{{ dockerfile_install_dir }}/dashboard"
+  when: dashboard_is_running|failed
+
+- name: create log directory
+  shell: mkdir -p {{ openstack_log_dir }}/dashboard && chmod 0777 {{ openstack_log_dir }}/dashboard
+  when: dashboard_is_running|failed
+
+- name: start Dashboard
+  shell: docker run --name=dashboard --net=host -v /var/log/openstack/dashboard:/var/log/apache2 -d -e KEYSTONE_IP={{ keystone_ip }} {{ dashboard_docker_image }}
+  when: dashboard_is_running|failed

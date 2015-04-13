@@ -11,4 +11,5 @@
     - glance
     - nova
     - neutron
+    - dashboard
   sudo: yes
