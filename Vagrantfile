@@ -10,6 +10,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define :controller do |conf|
     conf.vm.hostname = "controller.local"
     conf.vm.network :private_network, ip: "10.0.0.11"
+    conf.vm.network :public_network
     conf.vm.provider :virtualbox do |v|
       v.customize ["modifyvm", :id, "--memory", "4096" ]
     end
