@@ -1,0 +1,36 @@
+#!/bin/bash
+set -eux
+# ---------------------------------------------------------------------------
+# modify config file
+# ---------------------------------------------------------------------------
+crudini --set /etc/cinder/cinder.conf DEFAULT debug True
+crudini --set /etc/cinder/cinder.conf database connection mysql://cinder:{{ cinder_db_password }}@${CINDER_DATABASE_IP}/cinder
+crudini --set /etc/cinder/cinder.conf keystone_authtoken auth_host ${KEYSTONE_IP}
+crudini --set /etc/cinder/cinder.conf keystone_authtoken auth_port 35357
+crudini --set /etc/cinder/cinder.conf keystone_authtoken auth_protocol http
+crudini --set /etc/cinder/cinder.conf keystone_authtoken admin_tenant_name service
+crudini --set /etc/cinder/cinder.conf keystone_authtoken admin_user cinder
+crudini --set /etc/cinder/cinder.conf keystone_authtoken admin_password {{ cinder_password }}
+crudini --set /etc/cinder/cinder.conf DEFAULT rpc_backend rabbit
+crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_hosts ${MESSAGING_IP}
+crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_port 5672
+crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_userid guest
+crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_password {{ messaging_password }}
+# ---------------------------------------------------------------------------
+# database initialization
+# ---------------------------------------------------------------------------
+if ! mysql -h ${CINDER_DATABASE_IP} -uroot -p{{ database_root_password }} cinder -e "show tables;" | grep -q cinder ;
+then
+  sudo -u cinder -g cinder cinder-manage db sync
+fi
+# ---------------------------------------------------------------------------
+# create work directories
+# ---------------------------------------------------------------------------
+mkdir -p /var/run/cinder
+chown cinder:cinder /var/run/cinder/
+mkdir -p /var/lock/cinder
+chown cinder:root /var/lock/cinder/
+# ---------------------------------------------------------------------------
+# start service
+# ---------------------------------------------------------------------------
+monit -I -c /etc/monit/monitrc

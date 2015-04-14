@@ -12,4 +12,5 @@
     - nova
     - neutron
     - dashboard
+    - cinder
   sudo: yes

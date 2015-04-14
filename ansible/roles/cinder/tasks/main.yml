@@ -1,0 +1,76 @@
+---
+# Install Cinder
+
+- name: check Cinder running
+  shell: docker ps | grep -q {{ cinder_docker_image }}
+  register: cinder_is_running
+  ignore_errors: True
+
+- name: make Cinder Dockerfile directory
+  shell: mkdir -p {{ dockerfile_install_dir }}/cinder
+  when: cinder_is_running|failed
+
+- name: install Cinder Dockerfile
+  template: src=Dockerfile.j2 dest={{ dockerfile_install_dir }}/cinder/Dockerfile
+  when: cinder_is_running|failed
+
+- name: install service_launcher.sh
+  template: src=service_launcher.sh.j2 dest={{ dockerfile_install_dir }}/cinder/service_launcher.sh
+  when: cinder_is_running|failed
+
+- name: install monit.conf(1)
+  template: src=monit_cinder-api.conf.j2 dest={{ dockerfile_install_dir }}/cinder/monit_cinder-api.conf
+  when: cinder_is_running|failed
+
+- name: install monit.conf(2)
+  template: src=monit_cinder-scheduler.conf.j2 dest={{ dockerfile_install_dir }}/cinder/monit_cinder-scheduler.conf
+  when: cinder_is_running|failed
+
+- name: install monit.conf(3)
+  template: src=monit_openssh-server.conf.j2 dest={{ dockerfile_install_dir }}/cinder/monit_openssh-server.conf
+  when: cinder_is_running|failed
+
+- name: install maintenance ssh config
+  template: src=sshd_config.j2 dest={{ dockerfile_install_dir }}/cinder/sshd_config
+  when: cinder_is_running|failed
+
+- name: create maintenance ssh key
+  shell: echo -e 'n\n' | ssh-keygen -q -t rsa -P '' -f {{ dockerfile_install_dir }}/cinder/maintenance_id_rsa
+  ignore_errors: True
+  when: cinder_is_running|failed
+
+- name: build Cinder Dockerfile
+  shell: docker build -t {{ cinder_docker_image }} . > docker_build.log 2>&1
+  args:
+    chdir: "{{ dockerfile_install_dir }}/cinder"
+  when: cinder_is_running|failed
+
+- name: create log directory
+  shell: mkdir -p {{ openstack_log_dir }}/cinder && chmod 0777 {{ openstack_log_dir }}/cinder
+  when: cinder_is_running|failed
+
+- name: start Cinder
+  shell: docker run --name=cinder --net=host -v /var/log/openstack/cinder:/var/log/cinder -d -e CINDER_DATABASE_IP={{ openstack_database_ip }} -e MESSAGING_IP={{ openstack_messaging_ip }} -e KEYSTONE_IP={{ keystone_ip }} {{ cinder_docker_image }}
+  when: cinder_is_running|failed
+
+- name: install Cinder client
+  apt: name=python-cinderclient
+
+- name: check cinder user
+  shell: keystone --os-username admin --os-password {{ openstack_admin_password }} --os-tenant-name admin --os-auth-url http://{{ keystone_ip }}:35357/v2.0 user-list | grep -q cinder
+  register: cinder_exist
+  ignore_errors: True
+
+- name: add cinder user,role,service and endpoint
+  shell: |
+    export OS_USERNAME=admin
+    export OS_PASSWORD={{ openstack_admin_password }}
+    export OS_TENANT_NAME=admin
+    export OS_AUTH_URL=http://{{ keystone_ip }}:35357/v2.0
+    keystone user-create --name=cinder --pass={{ cinder_password }} --email=cinder@example.com
+    keystone user-role-add --user=cinder --tenant=service --role=admin
+    keystone service-create --name=cinder --type=volume --description="OpenStack Block Storage"
+    keystone endpoint-create --service-id=$(keystone service-list | awk '/ volume / {print $2}') --publicurl=http://{{ cinder_ip }}:8776/v1/%\(tenant_id\)s --internalurl=http://{{ cinder_ip }}:8776/v1/%\(tenant_id\)s --adminurl=http://{{ cinder_ip }}:8776/v1/%\(tenant_id\)s
+    keystone service-create --name=cinderv2 --type=volumev2 --description="OpenStack Block Storage v2"
+    keystone endpoint-create --service-id=$(keystone service-list | awk '/ volumev2 / {print $2}') --publicurl=http://{{ cinder_ip }}:8776/v2/%\(tenant_id\)s --internalurl=http://{{ cinder_ip }}:8776/v2/%\(tenant_id\)s --adminurl=http://{{ cinder_ip }}:8776/v2/%\(tenant_id\)s
+  when: cinder_exist|failed

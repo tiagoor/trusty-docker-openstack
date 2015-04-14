@@ -48,3 +48,9 @@ neutron_demo_subnet_cidr: 192.168.99.0/24
 
 dashboard_docker_image: kiyoad/dashboard
 dashboard_maintenance_ssh_port: 65505
+
+cinder_docker_image: kiyoad/cinder
+cinder_ip: 10.0.0.11
+cinder_password: CINDER_PASS
+cinder_db_password: CINDER_DBPASS
+cinder_maintenance_ssh_port: 65506

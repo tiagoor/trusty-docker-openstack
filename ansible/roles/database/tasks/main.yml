@@ -72,3 +72,17 @@
 - name: install initial neutron database
   shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "source /tmp/init_neutron.sql;"
   when: result|failed
+
+# Cinder
+- name: check cinder database
+  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "show databases;" | grep -q cinder
+  register: result
+  ignore_errors: True
+
+- name: create initial cinder database
+  template: src=init_cinder.sql.j2 dest=/tmp/init_cinder.sql
+  when: result|failed
+
+- name: install initial cinder database
+  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "source /tmp/init_cinder.sql;"
+  when: result|failed
