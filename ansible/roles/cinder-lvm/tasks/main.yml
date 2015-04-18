@@ -1,0 +1,39 @@
+---
+# Create LVM2 for Cinder
+
+- name: check loopback filesystem
+  shell: test -s /opt/filesystem.img
+  register: is_exist
+  ignore_errors: True
+
+- name: create loopback filesystem
+  shell: |
+    dd if=/dev/zero of=/opt/filesystem.img bs=1M count=10240
+  when: is_exist|failed
+
+- name: check losetup
+  shell: losetup -a | fgrep /opt/filesystem.img
+  register: result
+  ignore_errors: True
+
+- name: bind losetup
+  shell: losetup /dev/loop0 /opt/filesystem.img
+  when: result|failed
+
+- name: install lvm2
+  apt: name=lvm2
+
+- name: create lvm
+  shell: |
+    pvcreate /dev/loop0
+    vgcreate cinder-volumes /dev/loop0
+  when: is_exist|failed
+
+- name: check /etc/rc.local
+  shell: fgrep losetup /etc/rc.local
+  register: result
+  ignore_errors: True
+
+- name: add losetup to /etc/rc.local
+  shell: sed -i -e "s|exit 0|losetup /dev/loop0 /opt/filesystem.img|" /etc/rc.local
+  when: result|failed

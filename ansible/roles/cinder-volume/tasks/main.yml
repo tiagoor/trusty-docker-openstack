@@ -1,0 +1,50 @@
+---
+# Install Cinder volume
+
+- name: install wget
+  apt: name=wget
+
+- name: install crudini
+  shell: |
+    mkdir .build_pip
+    (cd .build_pip && wget -q https://bootstrap.pypa.io/get-pip.py && python get-pip.py && cd ..)
+    pip install crudini
+  args:
+    creates: /usr/local/bin/crudini
+
+- name: install Cinder volume component
+  apt: name=cinder-volume
+
+- name: config Cinder settings
+  shell: |
+   crudini --set /etc/cinder/cinder.conf DEFAULT debug True
+   crudini --set /etc/cinder/cinder.conf database connection mysql://cinder:{{ cinder_db_password }}@{{ openstack_database_ip }}/cinder
+   crudini --set /etc/cinder/cinder.conf keystone_authtoken auth_host {{ keystone_ip }}
+   crudini --set /etc/cinder/cinder.conf keystone_authtoken auth_port 35357
+   crudini --set /etc/cinder/cinder.conf keystone_authtoken auth_protocol http
+   crudini --set /etc/cinder/cinder.conf keystone_authtoken admin_tenant_name service
+   crudini --set /etc/cinder/cinder.conf keystone_authtoken admin_user cinder
+   crudini --set /etc/cinder/cinder.conf keystone_authtoken admin_password {{ cinder_password }}
+   crudini --set /etc/cinder/cinder.conf DEFAULT rpc_backend rabbit
+   crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_hosts {{ openstack_messaging_ip }}
+   crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_port 5672
+   crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_userid guest
+   crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_password {{ messaging_password }}
+   crudini --set /etc/cinder/cinder.conf DEFAULT my_ip {{ my_ip }}
+   crudini --set /etc/cinder/cinder.conf DEFAULT iscsi_ip_address {{ iscsi_interface_ip }}
+   crudini --set /etc/cinder/cinder.conf DEFAULT glance_host {{ glance_ip }}
+
+- name: restart service(1)
+  service: name=cinder-volume enabled=yes state=restarted
+
+- name: restart service(2)
+  service: name=tgt enabled=yes state=restarted
+
+- name: check restart cinder-volume in /etc/rc.local
+  shell: fgrep -q cinder-volume /etc/rc.local
+  register: result
+  ignore_errors: True
+
+- name: add restart cinder-volume to /etc/rc.local
+  shell: echo 'initctl restart cinder-volume' >> /etc/rc.local
+  when: result|failed

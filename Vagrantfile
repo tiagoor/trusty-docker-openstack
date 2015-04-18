@@ -31,8 +31,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     conf.vm.hostname = "compute1.local"
     conf.vm.network :private_network, ip: "10.0.0.31"
     conf.vm.network :private_network, ip: "10.0.1.31"
+    conf.vm.network :private_network, ip: "10.0.9.31"
     conf.vm.provider :virtualbox do |v|
       v.customize ["modifyvm", :id, "--memory", "2048" ]
+    end
+  end
+
+  config.vm.define :blockstorage1 do |conf|
+    conf.vm.hostname = "blockstorage1.local"
+    conf.vm.network :private_network, ip: "10.0.0.41"
+    conf.vm.network :private_network, ip: "10.0.9.41"
+    conf.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", "512" ]
     end
   end
 

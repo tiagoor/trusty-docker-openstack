@@ -1,0 +1,10 @@
+---
+# OpenStack block storge
+
+- hosts: blockstorage1
+  roles:
+    - common
+    - nodes
+    - cinder-lvm
+    - cinder-volume
+  sudo: yes
