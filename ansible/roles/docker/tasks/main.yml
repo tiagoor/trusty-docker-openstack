@@ -6,3 +6,18 @@
 
 - name: join a user in the docker group
   command: addgroup vagrant docker
+
+- name: make Common Dockerfile directory
+  shell: mkdir -p {{ dockerfile_install_dir }}/common
+
+- name: install Common Dockerfile
+  copy: src=Dockerfile dest={{ dockerfile_install_dir }}/common/Dockerfile
+
+- name: create maintenance ssh key
+  shell: echo -e 'n\n' | ssh-keygen -q -t rsa -P '' -f {{ dockerfile_install_dir }}/common/maintenance_id_rsa
+  ignore_errors: True
+
+- name: build Common Dockerfile
+  shell: docker build -t {{ common_docker_image }} . > docker_build.log 2>&1
+  args:
+    chdir: "{{ dockerfile_install_dir }}/common"

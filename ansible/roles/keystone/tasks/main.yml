@@ -30,11 +30,6 @@
   template: src=sshd_config.j2 dest={{ dockerfile_install_dir }}/keystone/sshd_config
   when: keystone_is_running|failed
 
-- name: create maintenance ssh key
-  shell: echo -e 'n\n' | ssh-keygen -q -t rsa -P '' -f {{ dockerfile_install_dir }}/keystone/maintenance_id_rsa
-  ignore_errors: True
-  when: keystone_is_running|failed
-
 - name: build Keystone Dockerfile
   shell: docker build -t {{ keystone_docker_image }} . > docker_build.log 2>&1
   args:

@@ -8,6 +8,7 @@ openstack_messaging_ip: 10.0.0.11
 # Currently RabbitMQ password is not able to change.
 messaging_password: guest
 
+common_docker_image: kiyoad/common
 dockerfile_install_dir: /opt/docker
 openstack_log_dir: /var/log/openstack
 

@@ -30,11 +30,6 @@
   template: src=sshd_config.j2 dest={{ dockerfile_install_dir }}/neutron/sshd_config
   when: neutron_is_running|failed
 
-- name: create maintenance ssh key
-  shell: echo -e 'n\n' | ssh-keygen -q -t rsa -P '' -f {{ dockerfile_install_dir }}/neutron/maintenance_id_rsa
-  ignore_errors: True
-  when: neutron_is_running|failed
-
 - name: build Neutron Dockerfile
   shell: docker build -t {{ neutron_docker_image }} . > docker_build.log 2>&1
   args:
