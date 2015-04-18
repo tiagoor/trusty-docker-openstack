@@ -1,5 +1,0 @@
-127.0.0.1 localhost
-
-10.0.0.11 controller.local      controller
-10.0.0.21 network.local         network
-10.0.0.31 compute1.local        compute1
