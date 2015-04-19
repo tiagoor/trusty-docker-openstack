@@ -1,17 +1,6 @@
 ---
 # Install Nova compute side
 
-- name: install wget
-  apt: name=wget
-
-- name: install crudini
-  shell: |
-    mkdir .build_pip
-    (cd .build_pip && wget -q https://bootstrap.pypa.io/get-pip.py && python get-pip.py && cd ..)
-    pip install crudini
-  args:
-    creates: /usr/local/bin/crudini
-
 - name: install Nova compute component
   apt: name=nova-compute-kvm
 
