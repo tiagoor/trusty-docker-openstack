@@ -1,9 +1,6 @@
 ---
 # Install Database service
 
-- name: install MySQL client
-  apt: name=mysql-client
-
 - name: check MySQL install
   shell: docker ps -a | grep -q openstack-mysql
   register: result
@@ -15,74 +12,4 @@
 
 - name: wait MySQL start
   shell: sleep 5
-  when: result|failed
-
-# Keystone
-- name: check keystone database
-  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "show databases;" | grep -q keystone
-  register: result
-  ignore_errors: True
-
-- name: create initial keystone database
-  template: src=init_keystone.sql.j2 dest=/tmp/init_keystone.sql
-  when: result|failed
-
-- name: install initial keystone database
-  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "source /tmp/init_keystone.sql;"
-  when: result|failed
-
-# Glance
-- name: check glance database
-  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "show databases;" | grep -q glance
-  register: result
-  ignore_errors: True
-
-- name: create initial glance database
-  template: src=init_glance.sql.j2 dest=/tmp/init_glance.sql
-  when: result|failed
-
-- name: install initial glance database
-  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "source /tmp/init_glance.sql;"
-  when: result|failed
-
-# Nova
-- name: check nova database
-  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "show databases;" | grep -q nova
-  register: result
-  ignore_errors: True
-
-- name: create initial nova database
-  template: src=init_nova.sql.j2 dest=/tmp/init_nova.sql
-  when: result|failed
-
-- name: install initial nova database
-  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "source /tmp/init_nova.sql;"
-  when: result|failed
-
-# Neutron
-- name: check neutron database
-  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "show databases;" | grep -q neutron
-  register: result
-  ignore_errors: True
-
-- name: create initial neutron database
-  template: src=init_neutron.sql.j2 dest=/tmp/init_neutron.sql
-  when: result|failed
-
-- name: install initial neutron database
-  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "source /tmp/init_neutron.sql;"
-  when: result|failed
-
-# Cinder
-- name: check cinder database
-  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "show databases;" | grep -q cinder
-  register: result
-  ignore_errors: True
-
-- name: create initial cinder database
-  template: src=init_cinder.sql.j2 dest=/tmp/init_cinder.sql
-  when: result|failed
-
-- name: install initial cinder database
-  shell: mysql -h 127.0.0.1 -uroot -p{{ database_root_password }} -N -s -e "source /tmp/init_cinder.sql;"
   when: result|failed

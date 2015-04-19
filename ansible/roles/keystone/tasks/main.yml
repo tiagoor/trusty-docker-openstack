@@ -1,6 +1,24 @@
 ---
 # Install Keystone
 
+- name: install MySQL client
+  apt: name=mysql-client
+
+- name: check Keystone database
+  shell: mysql -h {{ openstack_database_ip }} -uroot -p{{ database_root_password }} -N -s -e "show databases;" | grep -q keystone
+  register: db_exists
+  ignore_errors: True
+
+- name: create initial Keystone database
+  template: src=init_keystone.sql.j2 dest=/tmp/init_keystone.sql
+  when: db_exists|failed
+
+- name: install initial Keystone database
+  shell: |
+    mysql -h {{ openstack_database_ip }} -uroot -p{{ database_root_password }} -N -s -e "source /tmp/init_keystone.sql;"
+    rm /tmp/init_keystone.sql
+  when: db_exists|failed
+
 - name: check Keystone running
   shell: docker ps | grep -q {{ keystone_docker_image }}
   register: keystone_is_running

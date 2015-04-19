@@ -1,6 +1,24 @@
 ---
 # Install Glance
 
+- name: install MySQL client
+  apt: name=mysql-client
+
+- name: check Glance database
+  shell: mysql -h {{ openstack_database_ip }} -uroot -p{{ database_root_password }} -N -s -e "show databases;" | grep -q glance
+  register: db_exists
+  ignore_errors: True
+
+- name: create initial Glance database
+  template: src=init_glance.sql.j2 dest=/tmp/init_glance.sql
+  when: db_exists|failed
+
+- name: install initial Glance database
+  shell: |
+    mysql -h {{ openstack_database_ip }} -uroot -p{{ database_root_password }} -N -s -e "source /tmp/init_glance.sql;"
+    rm /tmp/init_glance.sql
+  when: db_exists|failed
+
 - name: check Glance running
   shell: docker ps | grep -q {{ glance_docker_image }}
   register: glance_is_running

@@ -1,6 +1,24 @@
 ---
 # Install Nova controller side
 
+- name: install MySQL client
+  apt: name=mysql-client
+
+- name: check Nova database
+  shell: mysql -h {{ openstack_database_ip }} -uroot -p{{ database_root_password }} -N -s -e "show databases;" | grep -q nova
+  register: db_exists
+  ignore_errors: True
+
+- name: create initial Nova database
+  template: src=init_nova.sql.j2 dest=/tmp/init_nova.sql
+  when: db_exists|failed
+
+- name: install initial Nova database
+  shell: |
+    mysql -h {{ openstack_database_ip }} -uroot -p{{ database_root_password }} -N -s -e "source /tmp/init_nova.sql;"
+    rm /tmp/init_nova.sql
+  when: db_exists|failed
+
 - name: check Nova running
   shell: docker ps | grep -q {{ nova_docker_image }}
   register: nova_is_running

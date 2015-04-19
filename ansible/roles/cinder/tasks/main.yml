@@ -1,6 +1,24 @@
 ---
 # Install Cinder
 
+- name: install MySQL client
+  apt: name=mysql-client
+
+- name: check Cinder database
+  shell: mysql -h {{ openstack_database_ip }} -uroot -p{{ database_root_password }} -N -s -e "show databases;" | grep -q cinder
+  register: db_exists
+  ignore_errors: True
+
+- name: create initial Cinder database
+  template: src=init_cinder.sql.j2 dest=/tmp/init_cinder.sql
+  when: db_exists|failed
+
+- name: install initial Cinder database
+  shell: |
+    mysql -h {{ openstack_database_ip }} -uroot -p{{ database_root_password }} -N -s -e "source /tmp/init_cinder.sql;"
+    rm /tmp/init_cinder.sql
+  when: db_exists|failed
+
 - name: check Cinder running
   shell: docker ps | grep -q {{ cinder_docker_image }}
   register: cinder_is_running
