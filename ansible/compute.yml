@@ -6,4 +6,5 @@
     - common
     - nodes
     - nova-compute
+    - neutron-compute
   sudo: yes

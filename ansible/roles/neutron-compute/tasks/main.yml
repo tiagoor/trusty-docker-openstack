@@ -1,0 +1,72 @@
+---
+# Install Neutron for compute
+
+- name: check kernel networking function
+  shell: grep -q '^net\.ipv4\.conf\.all\.rp_filter' /etc/sysctl.conf
+  register: result
+  ignore_errors: True
+
+- name: change kernel networking function
+  shell: |
+    echo 'net.ipv4.conf.all.rp_filter=0'         >> /etc/sysctl.conf
+    echo 'net.ipv4.conf.default.rp_filter=0'     >> /etc/sysctl.conf
+    echo 'net.bridge.bridge-nf-call-arptables=1' >> /etc/sysctl.conf
+    echo 'net.bridge.bridge-nf-call-iptables=1'  >> /etc/sysctl.conf
+    echo 'net.bridge.bridge-nf-call-ip6tables=1' >> /etc/sysctl.conf
+    sysctl -p
+  when: result|failed
+
+- name: install neutron-common pakcage
+  apt: name=neutron-common
+
+- name: install neutron-plugin-ml2 package
+  apt: name=neutron-plugin-ml2
+
+- name: install neutron-plugin-openvswitch-agent package
+  apt: name=neutron-plugin-openvswitch-agent
+
+- name: install openvswitch-datapath-dkms package
+  apt: name=openvswitch-datapath-dkms
+
+- name: config Neutron settings
+  shell: |
+    crudini --set /etc/neutron/neutron.conf DEFAULT verbose True
+    crudini --set /etc/neutron/neutron.conf DEFAULT debug True
+    crudini --set /etc/neutron/neutron.conf DEFAULT auth_strategy keystone
+    crudini --set /etc/neutron/neutron.conf keystone_authtoken auth_host {{ keystone_ip }}
+    crudini --set /etc/neutron/neutron.conf keystone_authtoken admin_tenant_name service
+    crudini --set /etc/neutron/neutron.conf keystone_authtoken admin_user neutron
+    crudini --set /etc/neutron/neutron.conf keystone_authtoken admin_password {{ neutron_password }}
+    crudini --set /etc/neutron/neutron.conf DEFAULT rpc_backend neutron.openstack.common.rpc.impl_kombu
+    crudini --set /etc/neutron/neutron.conf DEFAULT rabbit_host {{ openstack_messaging_ip }}
+    crudini --set /etc/neutron/neutron.conf DEFAULT rabbit_password {{ messaging_password }}
+    crudini --set /etc/neutron/neutron.conf DEFAULT core_plugin neutron.plugins.ml2.plugin.Ml2Plugin
+    crudini --set /etc/neutron/neutron.conf DEFAULT service_plugins neutron.services.l3_router.l3_router_plugin.L3RouterPlugin
+    crudini --set /etc/neutron/neutron.conf DEFAULT allow_overlapping_ips True
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 type_drivers gre
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 tenant_network_types gre
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 mechanism_drivers openvswitch
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2_type_gre tunnel_id_ranges 1:1000
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ovs local_ip {{ instance_tunnels_interface_ip }}
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ovs tunnel_type gre
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ovs enable_tunneling True
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup enable_security_group True
+
+- name: restart ovs
+  shell: service openvswitch-switch restart
+
+- name: wait ovs
+  shell: sleep 5
+
+- name: check br-int
+  shell: ovs-vsctl list-br | grep -q br-int
+  register: result
+  ignore_errors: True
+
+- name: add br-int
+  shell: ovs-vsctl add-br br-int
+  when: result|failed
+
+- name: restart neutron-plugin-openvswitch-agent service
+  service: name=neutron-plugin-openvswitch-agent enabled=yes state=restarted
