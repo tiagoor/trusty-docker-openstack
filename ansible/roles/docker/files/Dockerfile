@@ -13,6 +13,9 @@ RUN \
   (cd .build_pip && wget -q https://bootstrap.pypa.io/get-pip.py && python get-pip.py && cd ..) && \
   pip install crudini
 
+ADD monit_openssh-server.conf /etc/monit/conf.d/openssh-server.conf
+ADD sshd_config /etc/ssh/sshd_config
+ADD set_maintenance_port.sh /usr/local/bin/set_maintenance_port.sh
 ADD maintenance_id_rsa.pub /tmp/maintenance_id_rsa.pub
 
 RUN \

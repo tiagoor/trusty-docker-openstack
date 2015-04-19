@@ -10,7 +10,5 @@ ADD service_launcher.sh /usr/local/bin/service_launcher.sh
 RUN chmod 0755 /usr/local/bin/service_launcher.sh
 ADD monit_glance-api.conf /etc/monit/conf.d/glance-api.conf
 ADD monit_glance-registry.conf /etc/monit/conf.d/glance-registry.conf
-ADD monit_openssh-server.conf /etc/monit/conf.d/openssh-server.conf
-ADD sshd_config /etc/ssh/sshd_config
 
 CMD [ "service_launcher.sh" ]

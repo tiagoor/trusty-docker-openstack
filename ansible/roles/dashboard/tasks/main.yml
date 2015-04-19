@@ -18,20 +18,12 @@
   template: src=service_launcher.sh.j2 dest={{ dockerfile_install_dir }}/dashboard/service_launcher.sh
   when: dashboard_is_running|failed
 
-- name: install monit.conf(1)
+- name: install monit_apache2.conf
   template: src=monit_apache2.conf.j2 dest={{ dockerfile_install_dir }}/dashboard/monit_apache2.conf
   when: dashboard_is_running|failed
 
-- name: install monit.conf(2)
+- name: install monit_memcached.conf
   template: src=monit_memcached.conf.j2 dest={{ dockerfile_install_dir }}/dashboard/monit_memcached.conf
-  when: dashboard_is_running|failed
-
-- name: install monit.conf(3)
-  template: src=monit_openssh-server.conf.j2 dest={{ dockerfile_install_dir }}/dashboard/monit_openssh-server.conf
-  when: dashboard_is_running|failed
-
-- name: install maintenance ssh config
-  template: src=sshd_config.j2 dest={{ dockerfile_install_dir }}/dashboard/sshd_config
   when: dashboard_is_running|failed
 
 - name: build Dashboard Dockerfile
@@ -45,5 +37,11 @@
   when: dashboard_is_running|failed
 
 - name: start Dashboard
-  shell: docker run --name=dashboard --net=host -v /var/log/openstack/dashboard:/var/log/apache2 -d -e KEYSTONE_IP={{ keystone_ip }} {{ dashboard_docker_image }}
+  shell: >-
+    docker run -d --net=host
+    --name=dashboard
+    -v /var/log/openstack/dashboard:/var/log/apache2
+    -e MAINTENANCE_PORT={{ dashboard_maintenance_ssh_port }}
+    -e KEYSTONE_IP={{ keystone_ip }}
+    {{ dashboard_docker_image }}
   when: dashboard_is_running|failed

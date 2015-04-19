@@ -18,36 +18,28 @@
   template: src=service_launcher.sh.j2 dest={{ dockerfile_install_dir }}/nova/service_launcher.sh
   when: nova_is_running|failed
 
-- name: install monit.conf(1)
+- name: install monit_nova-api.conf
   template: src=monit_nova-api.conf.j2 dest={{ dockerfile_install_dir }}/nova/monit_nova-api.conf
   when: nova_is_running|failed
 
-- name: install monit.conf(2)
+- name: install monit_nova-cert.conf
   template: src=monit_nova-cert.conf.j2 dest={{ dockerfile_install_dir }}/nova/monit_nova-cert.conf
   when: nova_is_running|failed
 
-- name: install monit.conf(3)
+- name: install monit_nova-consoleauth.conf
   template: src=monit_nova-consoleauth.conf.j2 dest={{ dockerfile_install_dir }}/nova/monit_nova-consoleauth.conf
   when: nova_is_running|failed
 
-- name: install monit.conf(4)
+- name: install monit_nova-scheduler.conf
   template: src=monit_nova-scheduler.conf.j2 dest={{ dockerfile_install_dir }}/nova/monit_nova-scheduler.conf
   when: nova_is_running|failed
 
-- name: install monit.conf(5)
+- name: install monit_nova-conductor.conf
   template: src=monit_nova-conductor.conf.j2 dest={{ dockerfile_install_dir }}/nova/monit_nova-conductor.conf
   when: nova_is_running|failed
 
-- name: install monit.conf(6)
+- name: install monit_nova-novncproxy.conf
   template: src=monit_nova-novncproxy.conf.j2 dest={{ dockerfile_install_dir }}/nova/monit_nova-novncproxy.conf
-  when: nova_is_running|failed
-
-- name: install monit.conf(7)
-  template: src=monit_openssh-server.conf.j2 dest={{ dockerfile_install_dir }}/nova/monit_openssh-server.conf
-  when: nova_is_running|failed
-
-- name: install maintenance ssh config
-  template: src=sshd_config.j2 dest={{ dockerfile_install_dir }}/nova/sshd_config
   when: nova_is_running|failed
 
 - name: build Nova Dockerfile
@@ -61,14 +53,30 @@
   when: nova_is_running|failed
 
 - name: start Nova
-  shell: docker run --name=nova --privileged --net=host -v /var/log/openstack/nova:/var/log/nova -d -e NOVA_DATABASE_IP={{ openstack_database_ip }} -e MESSAGING_IP={{ openstack_messaging_ip }} -e KEYSTONE_IP={{ keystone_ip }} -e NOVA_IP={{ nova_ip }} -e NEUTRON_IP={{ neutron_ip }} {{ nova_docker_image }}
+  shell: >-
+    docker run -d --privileged --net=host
+    --name=nova
+    -v /var/log/openstack/nova:/var/log/nova
+    -e MAINTENANCE_PORT={{ nova_maintenance_ssh_port }}
+    -e NOVA_DATABASE_IP={{ openstack_database_ip }}
+    -e MESSAGING_IP={{ openstack_messaging_ip }}
+    -e KEYSTONE_IP={{ keystone_ip }}
+    -e NOVA_IP={{ nova_ip }}
+    -e NEUTRON_IP={{ neutron_ip }}
+    {{ nova_docker_image }}
   when: nova_is_running|failed
 
 - name: install Nova client
   apt: name=python-novaclient
 
 - name: check nova user
-  shell: keystone --os-username admin --os-password {{ openstack_admin_password }} --os-tenant-name admin --os-auth-url http://{{ keystone_ip }}:35357/v2.0 user-list | grep -q nova
+  shell: >-
+    keystone
+    --os-username admin
+    --os-password {{ openstack_admin_password }}
+    --os-tenant-name admin
+    --os-auth-url http://{{ keystone_ip }}:35357/v2.0
+    user-list | grep -q nova
   register: nova_exist
   ignore_errors: True
 

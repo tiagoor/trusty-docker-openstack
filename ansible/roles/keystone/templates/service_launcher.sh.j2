@@ -1,5 +1,6 @@
 #!/bin/bash
 set -eux
+. /usr/local/bin/set_maintenance_port.sh
 # ---------------------------------------------------------------------------
 # modify config file
 # ---------------------------------------------------------------------------
@@ -19,6 +20,7 @@ fi
 # ---------------------------------------------------------------------------
 (crontab -l -u keystone 2>&1 | grep -q token_flush) || \
   echo "@hourly /usr/bin/keystone-manage token_flush >/var/log/keystone/keystone-tokenflush.log 2>&1" >> /var/spool/cron/crontabs/keystone
+cron
 # ---------------------------------------------------------------------------
 # start service
 # ---------------------------------------------------------------------------

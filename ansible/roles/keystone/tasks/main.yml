@@ -18,16 +18,8 @@
   template: src=service_launcher.sh.j2 dest={{ dockerfile_install_dir }}/keystone/service_launcher.sh
   when: keystone_is_running|failed
 
-- name: install monit.conf(1)
+- name: install monit_keystone.conf
   template: src=monit_keystone.conf.j2 dest={{ dockerfile_install_dir }}/keystone/monit_keystone.conf
-  when: keystone_is_running|failed
-
-- name: install monit.conf(2)
-  template: src=monit_openssh-server.conf.j2 dest={{ dockerfile_install_dir }}/keystone/monit_openssh-server.conf
-  when: keystone_is_running|failed
-
-- name: install maintenance ssh config
-  template: src=sshd_config.j2 dest={{ dockerfile_install_dir }}/keystone/sshd_config
   when: keystone_is_running|failed
 
 - name: build Keystone Dockerfile
@@ -41,7 +33,13 @@
   when: keystone_is_running|failed
 
 - name: start Keystone
-  shell: docker run --name=keystone --net=host -v /var/log/openstack/keystone:/var/log/keystone -d -e KEYSTONE_DATABASE_IP={{ openstack_database_ip }} {{ keystone_docker_image }}
+  shell: >-
+    docker run -d --net=host
+    --name=keystone
+    -v /var/log/openstack/keystone:/var/log/keystone
+    -e MAINTENANCE_PORT={{ keystone_maintenance_ssh_port }}
+    -e KEYSTONE_DATABASE_IP={{ openstack_database_ip }}
+    {{ keystone_docker_image }}
   when: keystone_is_running|failed
 
 - name: wait Keystone

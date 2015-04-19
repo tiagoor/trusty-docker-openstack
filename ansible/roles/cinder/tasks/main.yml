@@ -18,20 +18,12 @@
   template: src=service_launcher.sh.j2 dest={{ dockerfile_install_dir }}/cinder/service_launcher.sh
   when: cinder_is_running|failed
 
-- name: install monit.conf(1)
+- name: install monit_cinder-api.conf
   template: src=monit_cinder-api.conf.j2 dest={{ dockerfile_install_dir }}/cinder/monit_cinder-api.conf
   when: cinder_is_running|failed
 
-- name: install monit.conf(2)
+- name: install monit_cinder-scheduler.conf
   template: src=monit_cinder-scheduler.conf.j2 dest={{ dockerfile_install_dir }}/cinder/monit_cinder-scheduler.conf
-  when: cinder_is_running|failed
-
-- name: install monit.conf(3)
-  template: src=monit_openssh-server.conf.j2 dest={{ dockerfile_install_dir }}/cinder/monit_openssh-server.conf
-  when: cinder_is_running|failed
-
-- name: install maintenance ssh config
-  template: src=sshd_config.j2 dest={{ dockerfile_install_dir }}/cinder/sshd_config
   when: cinder_is_running|failed
 
 - name: build Cinder Dockerfile
@@ -45,14 +37,28 @@
   when: cinder_is_running|failed
 
 - name: start Cinder
-  shell: docker run --name=cinder --net=host -v /var/log/openstack/cinder:/var/log/cinder -d -e CINDER_DATABASE_IP={{ openstack_database_ip }} -e MESSAGING_IP={{ openstack_messaging_ip }} -e KEYSTONE_IP={{ keystone_ip }} {{ cinder_docker_image }}
+  shell: >-
+    docker run -d --net=host
+    --name=cinder
+    -v /var/log/openstack/cinder:/var/log/cinder
+    -e MAINTENANCE_PORT={{ cinder_maintenance_ssh_port }}
+    -e CINDER_DATABASE_IP={{ openstack_database_ip }}
+    -e MESSAGING_IP={{ openstack_messaging_ip }}
+    -e KEYSTONE_IP={{ keystone_ip }}
+    {{ cinder_docker_image }}
   when: cinder_is_running|failed
 
 - name: install Cinder client
   apt: name=python-cinderclient
 
 - name: check cinder user
-  shell: keystone --os-username admin --os-password {{ openstack_admin_password }} --os-tenant-name admin --os-auth-url http://{{ keystone_ip }}:35357/v2.0 user-list | grep -q cinder
+  shell: >-
+    keystone
+    --os-username admin
+    --os-password {{ openstack_admin_password }}
+    --os-tenant-name admin
+    --os-auth-url http://{{ keystone_ip }}:35357/v2.0
+    user-list | grep -q cinder
   register: cinder_exist
   ignore_errors: True
 

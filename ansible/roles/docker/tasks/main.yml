@@ -13,6 +13,15 @@
 - name: install Common Dockerfile
   copy: src=Dockerfile dest={{ dockerfile_install_dir }}/common/Dockerfile
 
+- name: install monit_openssh-server.conf
+  copy: src=monit_openssh-server.conf dest={{ dockerfile_install_dir }}/common/monit_openssh-server.conf
+
+- name: install maintenance ssh config
+  copy: src=sshd_config dest={{ dockerfile_install_dir }}/common/sshd_config
+
+- name: install set maintenance port script
+  copy: src=set_maintenance_port.sh dest={{ dockerfile_install_dir }}/common/set_maintenance_port.sh
+
 - name: create maintenance ssh key
   shell: echo -e 'n\n' | ssh-keygen -q -t rsa -P '' -f {{ dockerfile_install_dir }}/common/maintenance_id_rsa
   ignore_errors: True

@@ -18,20 +18,12 @@
   template: src=service_launcher.sh.j2 dest={{ dockerfile_install_dir }}/glance/service_launcher.sh
   when: glance_is_running|failed
 
-- name: install monit.conf(1)
+- name: install monit_glance-api.conf
   template: src=monit_glance-api.conf.j2 dest={{ dockerfile_install_dir }}/glance/monit_glance-api.conf
   when: glance_is_running|failed
 
-- name: install monit.conf(2)
+- name: install monit_glance-registry.conf
   template: src=monit_glance-registry.conf.j2 dest={{ dockerfile_install_dir }}/glance/monit_glance-registry.conf
-  when: glance_is_running|failed
-
-- name: install monit.conf(3)
-  template: src=monit_openssh-server.conf.j2 dest={{ dockerfile_install_dir }}/glance/monit_openssh-server.conf
-  when: glance_is_running|failed
-
-- name: install maintenance ssh config
-  template: src=sshd_config.j2 dest={{ dockerfile_install_dir }}/glance/sshd_config
   when: glance_is_running|failed
 
 - name: build Glance Dockerfile
@@ -45,14 +37,27 @@
   when: glance_is_running|failed
 
 - name: start Glance
-  shell: docker run --name=glance --net=host -v /var/log/openstack/glance:/var/log/glance -d -e GLANCE_DATABASE_IP={{ openstack_database_ip }} -e KEYSTONE_IP={{ keystone_ip }} {{ glance_docker_image }}
+  shell: >-
+    docker run -d --net=host
+    --name=glance
+    -v /var/log/openstack/glance:/var/log/glance
+    -e MAINTENANCE_PORT={{ glance_maintenance_ssh_port }}
+    -e GLANCE_DATABASE_IP={{ openstack_database_ip }}
+    -e KEYSTONE_IP={{ keystone_ip }}
+    {{ glance_docker_image }}
   when: glance_is_running|failed
 
 - name: install Glance client
   apt: name=python-glanceclient
 
 - name: check glance user
-  shell: keystone --os-username admin --os-password {{ openstack_admin_password }} --os-tenant-name admin --os-auth-url http://{{ keystone_ip }}:35357/v2.0 user-list | grep -q glance
+  shell: >-
+    keystone
+    --os-username admin
+    --os-password {{ openstack_admin_password }}
+    --os-tenant-name admin
+    --os-auth-url http://{{ keystone_ip }}:35357/v2.0
+    user-list | grep -q glance
   register: glance_exist
   ignore_errors: True
 

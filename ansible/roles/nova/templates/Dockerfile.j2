@@ -14,7 +14,5 @@ ADD monit_nova-consoleauth.conf /etc/monit/conf.d/nova-consoleauth.conf
 ADD monit_nova-scheduler.conf /etc/monit/conf.d/nova-scheduler.conf
 ADD monit_nova-conductor.conf /etc/monit/conf.d/nova-conductor.conf
 ADD monit_nova-novncproxy.conf /etc/monit/conf.d/nova-novncproxy.conf
-ADD monit_openssh-server.conf /etc/monit/conf.d/openssh-server.conf
-ADD sshd_config /etc/ssh/sshd_config
 
 CMD [ "service_launcher.sh" ]

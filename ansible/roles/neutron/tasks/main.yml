@@ -18,16 +18,8 @@
   template: src=service_launcher.sh.j2 dest={{ dockerfile_install_dir }}/neutron/service_launcher.sh
   when: neutron_is_running|failed
 
-- name: install monit.conf(1)
+- name: install monit_neutron-server.conf
   template: src=monit_neutron-server.conf.j2 dest={{ dockerfile_install_dir }}/neutron/monit_neutron-server.conf
-  when: neutron_is_running|failed
-
-- name: install monit.conf(2)
-  template: src=monit_openssh-server.conf.j2 dest={{ dockerfile_install_dir }}/neutron/monit_openssh-server.conf
-  when: neutron_is_running|failed
-
-- name: install maintenance ssh config
-  template: src=sshd_config.j2 dest={{ dockerfile_install_dir }}/neutron/sshd_config
   when: neutron_is_running|failed
 
 - name: build Neutron Dockerfile
@@ -50,14 +42,30 @@
   when: neutron_is_running|failed
 
 - name: start Neutron
-  shell: docker run --name=neutron --net=host -v /var/log/openstack/neutron:/var/log/neutron -d -e NEUTRON_DATABASE_IP={{ openstack_database_ip }} -e MESSAGING_IP={{ openstack_messaging_ip }} -e KEYSTONE_IP={{ keystone_ip }} -e NOVA_IP={{ nova_ip }} -e SERVICE_TENANT_ID=`cat /tmp/service_tenant_id` {{ neutron_docker_image }}
+  shell: >-
+    docker run -d --net=host
+    --name=neutron
+    -v /var/log/openstack/neutron:/var/log/neutron
+    -e MAINTENANCE_PORT={{ neutron_maintenance_ssh_port }}
+    -e NEUTRON_DATABASE_IP={{ openstack_database_ip }}
+    -e MESSAGING_IP={{ openstack_messaging_ip }}
+    -e KEYSTONE_IP={{ keystone_ip }}
+    -e NOVA_IP={{ nova_ip }}
+    -e SERVICE_TENANT_ID=`cat /tmp/service_tenant_id`
+    {{ neutron_docker_image }}
   when: neutron_is_running|failed
 
 - name: install Neutron client
   apt: name=python-neutronclient
 
 - name: check neutron user
-  shell: keystone --os-username admin --os-password {{ openstack_admin_password }} --os-tenant-name admin --os-auth-url http://{{ keystone_ip }}:35357/v2.0 user-list | grep -q neutron
+  shell: >-
+    keystone
+    --os-username admin
+    --os-password {{ openstack_admin_password }}
+    --os-tenant-name admin
+    --os-auth-url http://{{ keystone_ip }}:35357/v2.0
+    user-list | grep -q neutron
   register: neutron_exist
   ignore_errors: True
 
