@@ -19,27 +19,27 @@
   when: nova_is_running|failed
 
 - name: install monit_nova-api.conf
-  template: src=monit_nova-api.conf.j2 dest={{ dockerfile_install_dir }}/nova/monit_nova-api.conf
+  copy: src=monit_nova-api.conf dest={{ dockerfile_install_dir }}/nova/monit_nova-api.conf
   when: nova_is_running|failed
 
 - name: install monit_nova-cert.conf
-  template: src=monit_nova-cert.conf.j2 dest={{ dockerfile_install_dir }}/nova/monit_nova-cert.conf
+  copy: src=monit_nova-cert.conf dest={{ dockerfile_install_dir }}/nova/monit_nova-cert.conf
   when: nova_is_running|failed
 
 - name: install monit_nova-consoleauth.conf
-  template: src=monit_nova-consoleauth.conf.j2 dest={{ dockerfile_install_dir }}/nova/monit_nova-consoleauth.conf
+  copy: src=monit_nova-consoleauth.conf dest={{ dockerfile_install_dir }}/nova/monit_nova-consoleauth.conf
   when: nova_is_running|failed
 
 - name: install monit_nova-scheduler.conf
-  template: src=monit_nova-scheduler.conf.j2 dest={{ dockerfile_install_dir }}/nova/monit_nova-scheduler.conf
+  copy: src=monit_nova-scheduler.conf dest={{ dockerfile_install_dir }}/nova/monit_nova-scheduler.conf
   when: nova_is_running|failed
 
 - name: install monit_nova-conductor.conf
-  template: src=monit_nova-conductor.conf.j2 dest={{ dockerfile_install_dir }}/nova/monit_nova-conductor.conf
+  copy: src=monit_nova-conductor.conf dest={{ dockerfile_install_dir }}/nova/monit_nova-conductor.conf
   when: nova_is_running|failed
 
 - name: install monit_nova-novncproxy.conf
-  template: src=monit_nova-novncproxy.conf.j2 dest={{ dockerfile_install_dir }}/nova/monit_nova-novncproxy.conf
+  copy: src=monit_nova-novncproxy.conf dest={{ dockerfile_install_dir }}/nova/monit_nova-novncproxy.conf
   when: nova_is_running|failed
 
 - name: build Nova Dockerfile

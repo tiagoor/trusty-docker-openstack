@@ -19,11 +19,11 @@
   when: cinder_is_running|failed
 
 - name: install monit_cinder-api.conf
-  template: src=monit_cinder-api.conf.j2 dest={{ dockerfile_install_dir }}/cinder/monit_cinder-api.conf
+  copy: src=monit_cinder-api.conf dest={{ dockerfile_install_dir }}/cinder/monit_cinder-api.conf
   when: cinder_is_running|failed
 
 - name: install monit_cinder-scheduler.conf
-  template: src=monit_cinder-scheduler.conf.j2 dest={{ dockerfile_install_dir }}/cinder/monit_cinder-scheduler.conf
+  copy: src=monit_cinder-scheduler.conf dest={{ dockerfile_install_dir }}/cinder/monit_cinder-scheduler.conf
   when: cinder_is_running|failed
 
 - name: build Cinder Dockerfile

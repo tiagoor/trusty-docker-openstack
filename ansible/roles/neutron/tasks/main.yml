@@ -19,7 +19,7 @@
   when: neutron_is_running|failed
 
 - name: install monit_neutron-server.conf
-  template: src=monit_neutron-server.conf.j2 dest={{ dockerfile_install_dir }}/neutron/monit_neutron-server.conf
+  copy: src=monit_neutron-server.conf dest={{ dockerfile_install_dir }}/neutron/monit_neutron-server.conf
   when: neutron_is_running|failed
 
 - name: build Neutron Dockerfile

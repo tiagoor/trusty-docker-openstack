@@ -19,11 +19,11 @@
   when: glance_is_running|failed
 
 - name: install monit_glance-api.conf
-  template: src=monit_glance-api.conf.j2 dest={{ dockerfile_install_dir }}/glance/monit_glance-api.conf
+  copy: src=monit_glance-api.conf dest={{ dockerfile_install_dir }}/glance/monit_glance-api.conf
   when: glance_is_running|failed
 
 - name: install monit_glance-registry.conf
-  template: src=monit_glance-registry.conf.j2 dest={{ dockerfile_install_dir }}/glance/monit_glance-registry.conf
+  copy: src=monit_glance-registry.conf dest={{ dockerfile_install_dir }}/glance/monit_glance-registry.conf
   when: glance_is_running|failed
 
 - name: build Glance Dockerfile

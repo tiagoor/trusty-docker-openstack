@@ -15,15 +15,15 @@
   when: dashboard_is_running|failed
 
 - name: install service_launcher.sh
-  template: src=service_launcher.sh.j2 dest={{ dockerfile_install_dir }}/dashboard/service_launcher.sh
+  copy: src=service_launcher.sh dest={{ dockerfile_install_dir }}/dashboard/service_launcher.sh
   when: dashboard_is_running|failed
 
 - name: install monit_apache2.conf
-  template: src=monit_apache2.conf.j2 dest={{ dockerfile_install_dir }}/dashboard/monit_apache2.conf
+  copy: src=monit_apache2.conf dest={{ dockerfile_install_dir }}/dashboard/monit_apache2.conf
   when: dashboard_is_running|failed
 
 - name: install monit_memcached.conf
-  template: src=monit_memcached.conf.j2 dest={{ dockerfile_install_dir }}/dashboard/monit_memcached.conf
+  copy: src=monit_memcached.conf dest={{ dockerfile_install_dir }}/dashboard/monit_memcached.conf
   when: dashboard_is_running|failed
 
 - name: build Dashboard Dockerfile
