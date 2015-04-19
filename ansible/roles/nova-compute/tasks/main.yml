@@ -52,16 +52,16 @@
     sysctl -p
   when: result|failed
 
-- name: install Neutron components(1)
+- name: install neutron-common pakcage
   apt: name=neutron-common
 
-- name: install Neutron components(2)
+- name: install neutron-plugin-ml2 package
   apt: name=neutron-plugin-ml2
 
-- name: install Neutron components(3)
+- name: install neutron-plugin-openvswitch-agent package
   apt: name=neutron-plugin-openvswitch-agent
 
-- name: install Neutron components(4)
+- name: install openvswitch-datapath-dkms package
   apt: name=openvswitch-datapath-dkms
 
 - name: config Neutron settings
@@ -104,8 +104,8 @@
   shell: ovs-vsctl add-br br-int
   when: result|failed
 
-- name: restart service(1)
+- name: restart nova-compute service
   service: name=nova-compute enabled=yes state=restarted
 
-- name: restart service(2)
+- name: restart neutron-plugin-openvswitch-agent service
   service: name=neutron-plugin-openvswitch-agent enabled=yes state=restarted

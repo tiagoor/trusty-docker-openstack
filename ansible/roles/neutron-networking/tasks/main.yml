@@ -14,19 +14,19 @@
     sysctl -p
   when: result|failed
 
-- name: install Neutron components(1)
+- name: install neutron-plugin-ml2 package
   apt: name=neutron-plugin-ml2
 
-- name: install Neutron components(2)
+- name: install neutron-plugin-openvswitch-agent package
   apt: name=neutron-plugin-openvswitch-agent
 
-- name: install Neutron components(3)
+- name: install openvswitch-datapath-dkms package
   apt: name=openvswitch-datapath-dkms
 
-- name: install Neutron components(4)
+- name: install neutron-l3-agent package
   apt: name=neutron-l3-agent
 
-- name: install Neutron components(5)
+- name: install neutron-dhcp-agent package
   apt: name=neutron-dhcp-agent
 
 - name: config Neutron settings
@@ -103,14 +103,14 @@
     ovs-vsctl add-port br-ex {{ br_ex_interface }}
   when: result|failed
 
-- name: restart service(1)
+- name: restart neutron-plugin-openvswitch-agent service
   service: name=neutron-plugin-openvswitch-agent enabled=yes state=restarted
 
-- name: restart service(2)
+- name: restart neutron-l3-agent service
   service: name=neutron-l3-agent enabled=yes state=restarted
 
-- name: restart service(3)
+- name: restart neutron-dhcp-agent service
   service: name=neutron-dhcp-agent enabled=yes state=restarted
 
-- name: restart service(4)
+- name: restart neutron-metadata-agent service
   service: name=neutron-metadata-agent enabled=yes state=restarted

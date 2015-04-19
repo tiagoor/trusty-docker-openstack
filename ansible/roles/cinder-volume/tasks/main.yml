@@ -23,10 +23,10 @@
    crudini --set /etc/cinder/cinder.conf DEFAULT iscsi_ip_address {{ iscsi_interface_ip }}
    crudini --set /etc/cinder/cinder.conf DEFAULT glance_host {{ glance_ip }}
 
-- name: restart service(1)
+- name: restart cinder-volume service
   service: name=cinder-volume enabled=yes state=restarted
 
-- name: restart service(2)
+- name: restart tgt service
   service: name=tgt enabled=yes state=restarted
 
 - name: check restart cinder-volume in /etc/rc.local
