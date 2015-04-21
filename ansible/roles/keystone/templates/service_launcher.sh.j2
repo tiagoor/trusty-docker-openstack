@@ -1,13 +1,22 @@
 #!/bin/bash
 set -eux
+MAINTENANCE_PORT=${MAINTENANCE_PORT:-{{ keystone_maintenance_ssh_port }}}
 . /usr/local/bin/set_maintenance_port.sh
 # ---------------------------------------------------------------------------
 # modify config file
 # ---------------------------------------------------------------------------
+KEYSTONE_DATABASE_IP=${KEYSTONE_DATABASE_IP:-127.0.0.1}
+ADMIN_PORT=${ADMIN_PORT:-35357}
+PUBLIC_PORT=${PUBLIC_PORT:-5000}
 crudini --set /etc/keystone/keystone.conf database connection mysql://keystone:{{ keystone_db_password }}@${KEYSTONE_DATABASE_IP}/keystone
 crudini --set /etc/keystone/keystone.conf DEFAULT admin_token {{ keystone_admin_token }}
 crudini --set /etc/keystone/keystone.conf DEFAULT log_dir /var/log/keystone
 crudini --set /etc/keystone/keystone.conf DEFAULT debug true
+crudini --set /etc/keystone/keystone.conf DEFAULT admin_port ${ADMIN_PORT}
+crudini --set /etc/keystone/keystone.conf DEFAULT public_port ${PUBLIC_PORT}
+crudini --set /etc/keystone/keystone.conf assignment driver keystone.assignment.backends.sql.Assignment
+crudini --set /etc/keystone/keystone.conf ec2 driver keystone.contrib.ec2.backends.sql.Ec2
+crudini --set /etc/keystone/keystone.conf token provider keystone.token.providers.uuid.Provider
 # ---------------------------------------------------------------------------
 # database initialization
 # ---------------------------------------------------------------------------
