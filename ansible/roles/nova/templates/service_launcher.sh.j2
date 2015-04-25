@@ -1,12 +1,19 @@
 #!/bin/bash
 set -eux
+MAINTENANCE_PORT=${MAINTENANCE_PORT:-{{ nova_maintenance_ssh_port }}}
 . /usr/local/bin/set_maintenance_port.sh
 # ---------------------------------------------------------------------------
 # modify config file
 # ---------------------------------------------------------------------------
+NOVA_DATABASE_IP=${NOVA_DATABASE_IP:-127.0.0.1}
+EC2_PORT=${EC2_PORT:-8773}
+COMPUTE_PORT=${COMPUTE_PORT:-8774}
+METADATA_PORT=${METADATA_PORT:-8775}
 crudini --set /etc/nova/nova.conf DEFAULT debug True
+crudini --set /etc/nova/nova.conf DEFAULT verbose True
 crudini --set /etc/nova/nova.conf DEFAULT rpc_backend rabbit
 crudini --set /etc/nova/nova.conf DEFAULT rabbit_hosts ${MESSAGING_IP}
+crudini --set /etc/nova/nova.conf DEFAULT rabbit_userid {{ messaging_user }}
 crudini --set /etc/nova/nova.conf DEFAULT rabbit_password {{ messaging_password }}
 crudini --set /etc/nova/nova.conf DEFAULT my_ip ${NOVA_IP}
 crudini --set /etc/nova/nova.conf DEFAULT vncserver_listen ${NOVA_IP}
@@ -15,16 +22,17 @@ crudini --set /etc/nova/nova.conf DEFAULT auth_strategy keystone
 
 crudini --set /etc/nova/nova.conf DEFAULT network_api_class nova.network.neutronv2.api.API
 crudini --set /etc/nova/nova.conf DEFAULT neutron_url http://${NEUTRON_IP}:9696
-crudini --set /etc/nova/nova.conf DEFAULT neutron_auth_strategy keystone
+crudini --set /etc/nova/nova.conf DEFAULT neutron_region_name RegionOne
 crudini --set /etc/nova/nova.conf DEFAULT neutron_admin_tenant_name service
 crudini --set /etc/nova/nova.conf DEFAULT neutron_admin_username neutron
 crudini --set /etc/nova/nova.conf DEFAULT neutron_admin_password {{ neutron_password }}
 crudini --set /etc/nova/nova.conf DEFAULT neutron_admin_auth_url http://${KEYSTONE_IP}:35357/v2.0
-crudini --set /etc/nova/nova.conf DEFAULT linuxnet_interface_driver nova.network.linux_net.LinuxOVSInterfaceDriver
 crudini --set /etc/nova/nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
 crudini --set /etc/nova/nova.conf DEFAULT security_group_api neutron
 
 crudini --set /etc/nova/nova.conf database connection mysql://nova:{{ nova_db_password }}@${NOVA_DATABASE_IP}/nova
+crudini --set /etc/nova/nova.conf keystone_authtoken signing_dir /var/cache/nova
+crudini --set /etc/nova/nova.conf keystone_authtoken auth_uri http://${KEYSTONE_IP}:5000/v2.0
 crudini --set /etc/nova/nova.conf keystone_authtoken auth_host ${KEYSTONE_IP}
 crudini --set /etc/nova/nova.conf keystone_authtoken auth_port 35357
 crudini --set /etc/nova/nova.conf keystone_authtoken auth_protocol http
@@ -40,6 +48,14 @@ crudini --set /etc/nova/nova.conf DEFAULT ec2_workers 4
 crudini --set /etc/nova/nova.conf DEFAULT metadata_workers 4
 crudini --set /etc/nova/nova.conf conductor workers 4
 
+crudini --set /etc/nova/nova.conf DEFAULT ec2_port ${EC2_PORT}
+crudini --set /etc/nova/nova.conf DEFAULT ec2_listen_port ${EC2_PORT}
+crudini --set /etc/nova/nova.conf DEFAULT osapi_compute_listen_port ${COMPUTE_PORT}
+crudini --set /etc/nova/nova.conf DEFAULT metadata_port ${METADATA_PORT}
+crudini --set /etc/nova/nova.conf DEFAULT metadata_listen_port ${METADATA_PORT}
+
+crudini --set /etc/nova/nova.conf osapi_v3 enabled False
+
 # ---------------------------------------------------------------------------
 # database initialization
 # ---------------------------------------------------------------------------
@@ -54,6 +70,8 @@ mkdir -p /var/run/nova
 chown nova:root /var/run/nova/
 mkdir -p /var/lock/nova
 chown nova:root /var/lock/nova/
+mkdir -p /var/cache/nova
+chown nova:root /var/cache/nova/
 # ---------------------------------------------------------------------------
 # start service
 # ---------------------------------------------------------------------------
