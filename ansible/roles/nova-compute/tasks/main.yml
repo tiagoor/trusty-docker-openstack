@@ -7,18 +7,19 @@
 - name: config Nova settings
   shell: |
    crudini --set /etc/nova/nova.conf DEFAULT debug True
+   crudini --set /etc/nova/nova.conf DEFAULT verbose True
    crudini --set /etc/nova/nova.conf DEFAULT rpc_backend rabbit
    crudini --set /etc/nova/nova.conf DEFAULT rabbit_hosts {{ openstack_messaging_ip }}
+   crudini --set /etc/nova/nova.conf DEFAULT rabbit_userid {{ messaging_user }}
    crudini --set /etc/nova/nova.conf DEFAULT rabbit_password {{ messaging_password }}
    crudini --set /etc/nova/nova.conf DEFAULT my_ip {{ my_ip }}
-   crudini --set /etc/nova/nova.conf DEFAULT vnc_enabled True
    crudini --set /etc/nova/nova.conf DEFAULT vncserver_listen 0.0.0.0
    crudini --set /etc/nova/nova.conf DEFAULT vncserver_proxyclient_address {{ my_ip }}
    crudini --set /etc/nova/nova.conf DEFAULT novncproxy_base_url http://{{ nova_ip }}:6080/vnc_auto.html
    crudini --set /etc/nova/nova.conf DEFAULT auth_strategy keystone
    crudini --set /etc/nova/nova.conf DEFAULT network_api_class nova.network.neutronv2.api.API
    crudini --set /etc/nova/nova.conf DEFAULT neutron_url http://{{ neutron_ip }}:9696
-   crudini --set /etc/nova/nova.conf DEFAULT neutron_auth_strategy keystone
+   crudini --set /etc/nova/nova.conf DEFAULT neutron_region_name RegionOne
    crudini --set /etc/nova/nova.conf DEFAULT neutron_admin_tenant_name service
    crudini --set /etc/nova/nova.conf DEFAULT neutron_admin_username neutron
    crudini --set /etc/nova/nova.conf DEFAULT neutron_admin_password {{ neutron_password }}
@@ -27,6 +28,10 @@
    crudini --set /etc/nova/nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
    crudini --set /etc/nova/nova.conf DEFAULT security_group_api neutron
    crudini --set /etc/nova/nova.conf database connection mysql://nova:{{ nova_db_password }}@{{ openstack_database_ip }}/nova
+   crudini --set /etc/nova/nova.conf keystone_authtoken signing_dir /var/cache/nova
+   mkdir -p /var/cache/nova
+   chown nova:root /var/cache/nova/
+   crudini --set /etc/nova/nova.conf keystone_authtoken auth_uri http://{{ keystone_ip }}:5000/v2.0
    crudini --set /etc/nova/nova.conf keystone_authtoken auth_host {{ keystone_ip }}
    crudini --set /etc/nova/nova.conf keystone_authtoken auth_port 35357
    crudini --set /etc/nova/nova.conf keystone_authtoken auth_protocol http
@@ -34,6 +39,7 @@
    crudini --set /etc/nova/nova.conf keystone_authtoken admin_user nova
    crudini --set /etc/nova/nova.conf keystone_authtoken admin_password {{ nova_password }}
    crudini --set /etc/nova/nova.conf DEFAULT glance_host {{ glance_ip }}
+   crudini --set /etc/nova/nova-compute.conf DEFAULT compute_driver libvirt.LibvirtDriver
    crudini --set /etc/nova/nova-compute.conf libvirt virt_type qemu
    rm -rf /var/lib/nova/nova.sqlite
 
