@@ -17,7 +17,7 @@
    crudini --set /etc/cinder/cinder.conf DEFAULT rpc_backend rabbit
    crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_hosts {{ openstack_messaging_ip }}
    crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_port 5672
-   crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_userid guest
+   crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_userid {{ messaging_user }}
    crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_password {{ messaging_password }}
    crudini --set /etc/cinder/cinder.conf DEFAULT my_ip {{ my_ip }}
    crudini --set /etc/cinder/cinder.conf DEFAULT iscsi_ip_address {{ iscsi_interface_ip }}
