@@ -26,7 +26,7 @@ crudini --set /etc/nova/nova.conf DEFAULT auth_strategy keystone
 
 crudini --set /etc/nova/nova.conf DEFAULT network_api_class nova.network.neutronv2.api.API
 crudini --set /etc/nova/nova.conf DEFAULT neutron_url http://${NEUTRON_IP}:9696
-crudini --set /etc/nova/nova.conf DEFAULT neutron_region_name RegionOne
+crudini --set /etc/nova/nova.conf DEFAULT neutron_region_name regionOne
 crudini --set /etc/nova/nova.conf DEFAULT neutron_admin_tenant_name service
 crudini --set /etc/nova/nova.conf DEFAULT neutron_admin_username neutron
 crudini --set /etc/nova/nova.conf DEFAULT neutron_admin_password {{ neutron_password }}
