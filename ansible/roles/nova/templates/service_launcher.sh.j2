@@ -6,6 +6,10 @@ MAINTENANCE_PORT=${MAINTENANCE_PORT:-{{ nova_maintenance_ssh_port }}}
 # modify config file
 # ---------------------------------------------------------------------------
 NOVA_DATABASE_IP=${NOVA_DATABASE_IP:-127.0.0.1}
+MESSAGING_IP=${MESSAGING_IP:-127.0.0.1}
+KEYSTONE_IP=${KEYSTONE_IP:-127.0.0.1}
+NEUTRON_IP=${NEUTRON_IP:-127.0.0.1}
+NOVA_IP=${NOVA_IP:-127.0.0.1}
 EC2_PORT=${EC2_PORT:-8773}
 COMPUTE_PORT=${COMPUTE_PORT:-8774}
 METADATA_PORT=${METADATA_PORT:-8775}
