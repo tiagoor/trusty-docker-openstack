@@ -32,17 +32,28 @@
   shell: |
     crudini --set /etc/neutron/neutron.conf DEFAULT verbose True
     crudini --set /etc/neutron/neutron.conf DEFAULT debug True
-    crudini --set /etc/neutron/neutron.conf DEFAULT auth_strategy keystone
+    #crudini --set /etc/neutron/neutron.conf database connection mysql://neutron:{{ neutron_db_password }}@{{ openstack_database_ip }}/neutron
+    crudini --set /etc/neutron/neutron.conf keystone_authtoken signing_dir /var/cache/neutron
+    mkdir -p /var/cache/neutron
+    chown neutron:root /var/cache/neutron/
+    crudini --set /etc/neutron/neutron.conf keystone_authtoken auth_uri http://{{ keystone_ip }}:5000/v2.0
     crudini --set /etc/neutron/neutron.conf keystone_authtoken auth_host {{ keystone_ip }}
+    crudini --set /etc/neutron/neutron.conf keystone_authtoken auth_port 35357
+    crudini --set /etc/neutron/neutron.conf keystone_authtoken auth_protocol http
     crudini --set /etc/neutron/neutron.conf keystone_authtoken admin_tenant_name service
     crudini --set /etc/neutron/neutron.conf keystone_authtoken admin_user neutron
     crudini --set /etc/neutron/neutron.conf keystone_authtoken admin_password {{ neutron_password }}
     crudini --set /etc/neutron/neutron.conf DEFAULT rpc_backend neutron.openstack.common.rpc.impl_kombu
-    crudini --set /etc/neutron/neutron.conf DEFAULT rabbit_host {{ openstack_messaging_ip }}
+    crudini --set /etc/neutron/neutron.conf DEFAULT rabbit_hosts {{ openstack_messaging_ip }}
+    crudini --set /etc/neutron/neutron.conf DEFAULT rabbit_userid {{ messaging_user }}
     crudini --set /etc/neutron/neutron.conf DEFAULT rabbit_password {{ messaging_password }}
     crudini --set /etc/neutron/neutron.conf DEFAULT core_plugin neutron.plugins.ml2.plugin.Ml2Plugin
     crudini --set /etc/neutron/neutron.conf DEFAULT service_plugins neutron.services.l3_router.l3_router_plugin.L3RouterPlugin
     crudini --set /etc/neutron/neutron.conf DEFAULT allow_overlapping_ips True
+    crudini --set /etc/neutron/neutron.conf DEFAULT lock_path /var/lock/neutron
+    mkdir -p /var/lock/neutron
+    chown neutron:root /var/lock/neutron/
+    crudini --set /etc/neutron/neutron.conf agent root_helper "sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf"
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 type_drivers gre
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 tenant_network_types gre
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 mechanism_drivers openvswitch
@@ -51,7 +62,8 @@
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ovs tunnel_type gre
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ovs enable_tunneling True
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
-    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup enable_security_group True
+    #crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini database connection mysql://neutron:{{ neutron_db_password }}@{{ openstack_database_ip }}/neutron
+    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini agent root_helper "sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf"
 
 - name: restart ovs
   shell: service openvswitch-switch restart
