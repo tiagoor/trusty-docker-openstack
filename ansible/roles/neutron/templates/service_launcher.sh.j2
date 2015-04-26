@@ -1,21 +1,29 @@
 #!/bin/bash
 set -eux
+MAINTENANCE_PORT=${MAINTENANCE_PORT:-{{ neutron_maintenance_ssh_port }}}
 . /usr/local/bin/set_maintenance_port.sh
 # ---------------------------------------------------------------------------
 # modify config file
 # ---------------------------------------------------------------------------
+NEUTRON_DATABASE_IP=${NEUTRON_DATABASE_IP:-127.0.0.1}
+MESSAGING_IP=${MESSAGING_IP:-127.0.0.1}
+KEYSTONE_IP=${KEYSTONE_IP:-127.0.0.1}
+NOVA_IP=${NOVA_IP:-127.0.0.1}
+BIND_PORT=${BIND_PORT:-9696}
 crudini --set /etc/neutron/neutron.conf DEFAULT verbose True
 crudini --set /etc/neutron/neutron.conf DEFAULT debug True
-crudini --set /etc/neutron/neutron.conf DEFAULT auth_strategy keystone
+crudini --set /etc/neutron/neutron.conf keystone_authtoken signing_dir /var/cache/neutron
+crudini --set /etc/neutron/neutron.conf keystone_authtoken auth_uri http://${KEYSTONE_IP}:5000/v2.0
 crudini --set /etc/neutron/neutron.conf keystone_authtoken auth_host ${KEYSTONE_IP}
+crudini --set /etc/neutron/neutron.conf keystone_authtoken auth_port 35357
+crudini --set /etc/neutron/neutron.conf keystone_authtoken auth_protocol http
 crudini --set /etc/neutron/neutron.conf keystone_authtoken admin_tenant_name service
 crudini --set /etc/neutron/neutron.conf keystone_authtoken admin_user neutron
 crudini --set /etc/neutron/neutron.conf keystone_authtoken admin_password {{ neutron_password }}
 crudini --set /etc/neutron/neutron.conf DEFAULT rpc_backend neutron.openstack.common.rpc.impl_kombu
-crudini --set /etc/neutron/neutron.conf DEFAULT rabbit_host ${MESSAGING_IP}
+crudini --set /etc/neutron/neutron.conf DEFAULT rabbit_hosts ${MESSAGING_IP}
+crudini --set /etc/neutron/neutron.conf DEFAULT rabbit_userid {{ messaging_user }}
 crudini --set /etc/neutron/neutron.conf DEFAULT rabbit_password {{ messaging_password }}
-crudini --set /etc/neutron/neutron.conf DEFAULT notify_nova_on_port_status_changes True
-crudini --set /etc/neutron/neutron.conf DEFAULT notify_nova_on_port_data_changes True
 crudini --set /etc/neutron/neutron.conf DEFAULT nova_url http://${NOVA_IP}:8774/v2
 crudini --set /etc/neutron/neutron.conf DEFAULT nova_admin_username nova
 crudini --set /etc/neutron/neutron.conf DEFAULT nova_admin_tenant_id ${SERVICE_TENANT_ID}
@@ -24,6 +32,9 @@ crudini --set /etc/neutron/neutron.conf DEFAULT nova_admin_auth_url http://${KEY
 crudini --set /etc/neutron/neutron.conf DEFAULT core_plugin neutron.plugins.ml2.plugin.Ml2Plugin
 crudini --set /etc/neutron/neutron.conf DEFAULT service_plugins neutron.services.l3_router.l3_router_plugin.L3RouterPlugin
 crudini --set /etc/neutron/neutron.conf DEFAULT allow_overlapping_ips True
+crudini --set /etc/neutron/neutron.conf DEFAULT lock_path /var/lock/neutron
+
+crudini --set /etc/neutron/neutron.conf DEFAULT bind_port ${BIND_PORT}
 
 crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 type_drivers gre
 crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 tenant_network_types gre
@@ -43,7 +54,11 @@ fi
 # create work directories
 # ---------------------------------------------------------------------------
 mkdir -p /var/run/neutron
-chown neutron:root /var/run/neutron
+chown neutron:root /var/run/neutron/
+mkdir -p /var/lock/neutron
+chown neutron:root /var/lock/neutron/
+mkdir -p /var/cache/neutron
+chown neutron:root /var/cache/neutron/
 # ---------------------------------------------------------------------------
 # start service
 # ---------------------------------------------------------------------------
