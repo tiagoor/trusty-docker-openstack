@@ -27,7 +27,7 @@
    crudini --set /etc/nova/nova.conf DEFAULT linuxnet_interface_driver nova.network.linux_net.LinuxOVSInterfaceDriver
    crudini --set /etc/nova/nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
    crudini --set /etc/nova/nova.conf DEFAULT security_group_api neutron
-   crudini --set /etc/nova/nova.conf database connection mysql://nova:{{ nova_db_password }}@{{ openstack_database_ip }}/nova
+   #crudini --set /etc/nova/nova.conf database connection mysql://nova:{{ nova_db_password }}@{{ openstack_database_ip }}/nova
    crudini --set /etc/nova/nova.conf keystone_authtoken signing_dir /var/cache/nova
    mkdir -p /var/cache/nova
    chown nova:root /var/cache/nova/

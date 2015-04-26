@@ -33,7 +33,7 @@
   shell: |
     crudini --set /etc/neutron/neutron.conf DEFAULT verbose True
     crudini --set /etc/neutron/neutron.conf DEFAULT debug True
-    crudini --set /etc/neutron/neutron.conf database connection mysql://neutron:{{ neutron_db_password }}@{{ openstack_database_ip }}/neutron
+    #crudini --set /etc/neutron/neutron.conf database connection mysql://neutron:{{ neutron_db_password }}@{{ openstack_database_ip }}/neutron
     crudini --set /etc/neutron/neutron.conf keystone_authtoken signing_dir /var/cache/neutron
     mkdir -p /var/cache/neutron
     chown neutron:root /var/cache/neutron/
@@ -84,7 +84,7 @@
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ovs tunnel_type gre
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ovs enable_tunneling True
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
-    crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini database connection mysql://neutron:{{ neutron_db_password }}@{{ openstack_database_ip }}/neutron
+    #crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini database connection mysql://neutron:{{ neutron_db_password }}@{{ openstack_database_ip }}/neutron
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini agent root_helper "sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf"
 
 - name: restart ovs
