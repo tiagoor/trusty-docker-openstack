@@ -7,21 +7,29 @@
 - name: config Cinder settings
   shell: |
    crudini --set /etc/cinder/cinder.conf DEFAULT debug True
+   crudini --set /etc/cinder/cinder.conf DEFAULT verbose True
+   crudini --set /etc/cinder/cinder.conf DEFAULT rpc_backend rabbit
+   crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_hosts {{ openstack_messaging_ip }}
+   crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_userid {{ messaging_user }}
+   crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_password {{ messaging_password }}
+   crudini --set /etc/cinder/cinder.conf DEFAULT lock_path /var/lock/cinder
+   mkdir -p /var/lock/cinder
+   chown cinder:cinder /var/lock/cinder/
+   crudini --set /etc/cinder/cinder.conf DEFAULT auth_strategy keystone
+   crudini --set /etc/cinder/cinder.conf DEFAULT my_ip {{ my_ip }}
+   crudini --set /etc/cinder/cinder.conf DEFAULT iscsi_ip_address {{ iscsi_interface_ip }}
+   crudini --set /etc/cinder/cinder.conf DEFAULT glance_host {{ glance_ip }}
    crudini --set /etc/cinder/cinder.conf database connection mysql://cinder:{{ cinder_db_password }}@{{ openstack_database_ip }}/cinder
+   crudini --set /etc/cinder/cinder.conf keystone_authtoken signing_dir /var/cache/cinder
+   mkdir -p /var/cache/cinder
+   chown cinder:cinder /var/cache/cinder/
+   crudini --set /etc/cinder/cinder.conf keystone_authtoken auth_uri http://{{ keystone_ip }}:5000/v2.0
    crudini --set /etc/cinder/cinder.conf keystone_authtoken auth_host {{ keystone_ip }}
    crudini --set /etc/cinder/cinder.conf keystone_authtoken auth_port 35357
    crudini --set /etc/cinder/cinder.conf keystone_authtoken auth_protocol http
    crudini --set /etc/cinder/cinder.conf keystone_authtoken admin_tenant_name service
    crudini --set /etc/cinder/cinder.conf keystone_authtoken admin_user cinder
    crudini --set /etc/cinder/cinder.conf keystone_authtoken admin_password {{ cinder_password }}
-   crudini --set /etc/cinder/cinder.conf DEFAULT rpc_backend rabbit
-   crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_hosts {{ openstack_messaging_ip }}
-   crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_port 5672
-   crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_userid {{ messaging_user }}
-   crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_password {{ messaging_password }}
-   crudini --set /etc/cinder/cinder.conf DEFAULT my_ip {{ my_ip }}
-   crudini --set /etc/cinder/cinder.conf DEFAULT iscsi_ip_address {{ iscsi_interface_ip }}
-   crudini --set /etc/cinder/cinder.conf DEFAULT glance_host {{ glance_ip }}
 
 - name: restart cinder-volume service
   service: name=cinder-volume enabled=yes state=restarted

@@ -4,19 +4,32 @@ set -eux
 # ---------------------------------------------------------------------------
 # modify config file
 # ---------------------------------------------------------------------------
+CINDER_DATABASE_IP=${CINDER_DATABASE_IP:-127.0.0.1}
+MESSAGING_IP=${MESSAGING_IP:-127.0.0.1}
+KEYSTONE_IP=${KEYSTONE_IP:-127.0.0.1}
+VOLUME_PORT=${VOLUME_PORT:-8776}
 crudini --set /etc/cinder/cinder.conf DEFAULT debug True
+crudini --set /etc/cinder/cinder.conf DEFAULT verbose True
+crudini --set /etc/cinder/cinder.conf DEFAULT rpc_backend rabbit
+crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_hosts ${MESSAGING_IP}
+crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_userid {{ messaging_user }}
+crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_password {{ messaging_password }}
+crudini --set /etc/cinder/cinder.conf DEFAULT lock_path /var/lock/cinder
+crudini --set /etc/cinder/cinder.conf DEFAULT auth_strategy keystone
 crudini --set /etc/cinder/cinder.conf database connection mysql://cinder:{{ cinder_db_password }}@${CINDER_DATABASE_IP}/cinder
+crudini --set /etc/cinder/cinder.conf keystone_authtoken signing_dir /var/cache/cinder
+crudini --set /etc/cinder/cinder.conf keystone_authtoken auth_uri http://${KEYSTONE_IP}:5000/v2.0
 crudini --set /etc/cinder/cinder.conf keystone_authtoken auth_host ${KEYSTONE_IP}
 crudini --set /etc/cinder/cinder.conf keystone_authtoken auth_port 35357
 crudini --set /etc/cinder/cinder.conf keystone_authtoken auth_protocol http
 crudini --set /etc/cinder/cinder.conf keystone_authtoken admin_tenant_name service
 crudini --set /etc/cinder/cinder.conf keystone_authtoken admin_user cinder
 crudini --set /etc/cinder/cinder.conf keystone_authtoken admin_password {{ cinder_password }}
-crudini --set /etc/cinder/cinder.conf DEFAULT rpc_backend rabbit
-crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_hosts ${MESSAGING_IP}
-crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_port 5672
-crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_userid {{ messaging_user }}
-crudini --set /etc/cinder/cinder.conf DEFAULT rabbit_password {{ messaging_password }}
+
+crudini --set /etc/cinder/cinder.conf DEFAULT osapi_volume_workers 1
+
+crudini --set /etc/cinder/cinder.conf DEFAULT osapi_volume_listen_port ${VOLUME_PORT}
+
 # ---------------------------------------------------------------------------
 # database initialization
 # ---------------------------------------------------------------------------
@@ -30,7 +43,9 @@ fi
 mkdir -p /var/run/cinder
 chown cinder:cinder /var/run/cinder/
 mkdir -p /var/lock/cinder
-chown cinder:root /var/lock/cinder/
+chown cinder:cinder /var/lock/cinder/
+mkdir -p /var/cache/cinder
+chown cinder:cinder /var/cache/cinder/
 # ---------------------------------------------------------------------------
 # start service
 # ---------------------------------------------------------------------------
