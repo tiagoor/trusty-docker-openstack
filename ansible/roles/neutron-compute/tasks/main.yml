@@ -35,7 +35,7 @@
     #crudini --set /etc/neutron/neutron.conf database connection mysql://neutron:{{ neutron_db_password }}@{{ openstack_database_ip }}/neutron
     crudini --set /etc/neutron/neutron.conf keystone_authtoken signing_dir /var/cache/neutron
     mkdir -p /var/cache/neutron
-    chown neutron:root /var/cache/neutron/
+    chown neutron:neutron /var/cache/neutron/
     crudini --set /etc/neutron/neutron.conf keystone_authtoken auth_uri http://{{ keystone_ip }}:5000/v2.0
     crudini --set /etc/neutron/neutron.conf keystone_authtoken auth_host {{ keystone_ip }}
     crudini --set /etc/neutron/neutron.conf keystone_authtoken auth_port 35357
@@ -52,7 +52,7 @@
     crudini --set /etc/neutron/neutron.conf DEFAULT allow_overlapping_ips True
     crudini --set /etc/neutron/neutron.conf DEFAULT lock_path /var/lock/neutron
     mkdir -p /var/lock/neutron
-    chown neutron:root /var/lock/neutron/
+    chown neutron:neutron /var/lock/neutron/
     crudini --set /etc/neutron/neutron.conf agent root_helper "sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf"
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 type_drivers gre
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 tenant_network_types gre

@@ -71,11 +71,11 @@ fi
 # create work directories
 # ---------------------------------------------------------------------------
 mkdir -p /var/run/nova
-chown nova:root /var/run/nova/
+chown nova:nova /var/run/nova/
 mkdir -p /var/lock/nova
-chown nova:root /var/lock/nova/
+chown nova:nova /var/lock/nova/
 mkdir -p /var/cache/nova
-chown nova:root /var/cache/nova/
+chown nova:nova /var/cache/nova/
 # ---------------------------------------------------------------------------
 # start service
 # ---------------------------------------------------------------------------
