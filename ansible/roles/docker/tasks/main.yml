@@ -30,3 +30,18 @@
   shell: docker build -t {{ common_docker_image }} . > docker_build.log 2>&1
   args:
     chdir: "{{ dockerfile_install_dir }}/common"
+
+- name: install nsenter
+  shell: docker run --rm -v /usr/local/bin:/target jpetazzo/nsenter
+  args:
+    creates: /usr/local/bin/nsenter
+
+- name: install nsenter convenient script
+  shell: |
+    export nse={{ dockerfile_install_dir }}/common/nse.sh
+    echo '#!/bin/bash' > ${nse}
+    echo 'set -eux' >> ${nse}
+    echo 'nsenter --mount --uts --ipc --net --pid --target $1' >> ${nse}
+    chmod a+x ${nse}
+  args:
+    creates: "{{ dockerfile_install_dir }}/common/nse.sh"
