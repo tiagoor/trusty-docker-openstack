@@ -79,4 +79,12 @@ chown nova:nova /var/cache/nova/
 # ---------------------------------------------------------------------------
 # start service
 # ---------------------------------------------------------------------------
+rm -f /var/run/monit.pid
+rm -f /var/run/sshd.pid
+rm -f /var/run/nova-api.pid
+rm -f /var/run/nova-cert.pid
+rm -f /var/run/nova-conductor.pid
+rm -f /var/run/nova-consoleauth.pid
+rm -f /var/run/nova-novncproxy.pid
+rm -f /var/run/nova-scheduler.pid
 monit -I -c /etc/monit/monitrc

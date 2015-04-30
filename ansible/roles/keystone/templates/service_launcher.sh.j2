@@ -33,4 +33,7 @@ cron
 # ---------------------------------------------------------------------------
 # start service
 # ---------------------------------------------------------------------------
+rm -f /var/run/monit.pid
+rm -f /var/run/sshd.pid
+rm -f /var/run/keystone.pid
 monit -I -c /etc/monit/monitrc

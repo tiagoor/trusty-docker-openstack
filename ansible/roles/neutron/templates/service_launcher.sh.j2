@@ -63,4 +63,7 @@ chown neutron:neutron /var/cache/neutron/
 # ---------------------------------------------------------------------------
 # start service
 # ---------------------------------------------------------------------------
+rm -f /var/run/monit.pid
+rm -f /var/run/sshd.pid
+rm -f /var/run/neutron-server.pid
 monit -I -c /etc/monit/monitrc

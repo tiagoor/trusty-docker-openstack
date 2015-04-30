@@ -49,4 +49,8 @@ chown cinder:cinder /var/cache/cinder/
 # ---------------------------------------------------------------------------
 # start service
 # ---------------------------------------------------------------------------
+rm -f /var/run/monit.pid
+rm -f /var/run/sshd.pid
+rm -f /var/run/cinder-api.pid
+rm -f /var/run/cinder-scheduler.pid
 monit -I -c /etc/monit/monitrc

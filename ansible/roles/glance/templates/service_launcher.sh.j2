@@ -49,4 +49,8 @@ chown glance:glance /var/cache/glance/
 # ---------------------------------------------------------------------------
 # start service
 # ---------------------------------------------------------------------------
+rm -f /var/run/monit.pid
+rm -f /var/run/sshd.pid
+rm -f /var/run/glance-api.pid
+rm -f /var/run/glance-registry.pid
 monit -I -c /etc/monit/monitrc
