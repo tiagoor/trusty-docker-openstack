@@ -37,11 +37,4 @@
     creates: /usr/local/bin/nsenter
 
 - name: install nsenter convenient script
-  shell: |
-    export nse={{ dockerfile_install_dir }}/common/nse.sh
-    echo '#!/bin/bash' > ${nse}
-    echo 'set -eux' >> ${nse}
-    echo 'nsenter --mount --uts --ipc --net --pid --target $1' >> ${nse}
-    chmod a+x ${nse}
-  args:
-    creates: "{{ dockerfile_install_dir }}/common/nse.sh"
+  copy: src=nse.sh dest={{ dockerfile_install_dir }}/common/nse.sh mode=0755
