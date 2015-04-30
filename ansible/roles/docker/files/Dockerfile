@@ -4,9 +4,6 @@ MAINTAINER KIYOHIRO ADACHI <kiyoad@da2.so-net.ne.jp>
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN \
-  export local_repo=/etc/apt/sources.list.d/local_repo.list && \
-  echo 'deb     http://192.168.1.200/apt-mirror/ubuntu/ trusty main restricted universe' >  ${local_repo} && \
-  echo 'deb-src http://192.168.1.200/apt-mirror/ubuntu/ trusty main restricted universe' >> ${local_repo} && \
   apt-get update && apt-get upgrade -y && \
   apt-get install -qy wget python-mysqldb mysql-client monit openssh-server && \
   mkdir .build_pip && \
