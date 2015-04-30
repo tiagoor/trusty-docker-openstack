@@ -8,7 +8,5 @@ RUN \
 
 ADD service_launcher.sh /usr/local/bin/service_launcher.sh
 RUN chmod 0755 /usr/local/bin/service_launcher.sh
-ADD monit_apache2.conf /etc/monit/conf.d/apache2.conf
-ADD monit_memcached.conf /etc/monit/conf.d/memcached.conf
 
 CMD [ "service_launcher.sh" ]

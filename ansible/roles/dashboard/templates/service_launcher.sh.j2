@@ -1,11 +1,19 @@
 #!/bin/bash
 set -eux
+MAINTENANCE_PORT=${MAINTENANCE_PORT:-{{ dashboard_maintenance_ssh_port }}}
 . /usr/local/bin/set_maintenance_port.sh
 # ---------------------------------------------------------------------------
 # modify config file
 # ---------------------------------------------------------------------------
+KEYSTONE_IP=${KEYSTONE_IP:-127.0.0.1}
 sed -i -e "s/^\(OPENSTACK_HOST\) *= *\"127\.0\.0\.1\"/\1 = \"${KEYSTONE_IP}\"/" /etc/openstack-dashboard/local_settings.py
 # ---------------------------------------------------------------------------
 # start service
 # ---------------------------------------------------------------------------
+rm -f /var/run/monit.pid
+rm -f /var/run/sshd.pid
+rm -f /var/run/apache2.pid
+rm -f /var/run/memcached.pid
+[[ -f /etc/monit/conf.d/apache2   ]] || cp /etc/monit/monitrc.d/apache2   /etc/monit/conf.d/apache2
+[[ -f /etc/monit/conf.d/memcached ]] || cp /etc/monit/monitrc.d/memcached /etc/monit/conf.d/memcached
 monit -I -c /etc/monit/monitrc
