@@ -91,12 +91,5 @@
     keystone endpoint-create --service-id=$(keystone service-list | awk '/ image / {print $2}') --publicurl=http://{{ glance_ip }}:9292 --internalurl=http://{{ glance_ip }}:9292 --adminurl=http://{{ glance_ip }}:9292
   when: glance_exist|failed
 
-- name: create CirrOS download and registration script
-  shell: |
-    export script_file=/root/get-cirros-and-reg.sh
-    echo '#!/bin/bash' >  ${script_file}
-    echo 'set -eux'    >> ${script_file}
-    echo 'wget http://cdn.download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img' >> ${script_file}
-    echo 'glance image-create --name "cirros-0.3.3-x86_64" --disk-format qcow2 --container-format bare --is-public True --progress < cirros-0.3.3-x86_64-disk.img' >> ${script_file}
-    chmod a+x ${script_file}
-  when: glance_is_running|failed
+- name: install CirrOS download and registration script
+  template: src=get-cirros-and-reg.sh.j2 dest=/root/get-cirros-and-reg.sh mode=0755

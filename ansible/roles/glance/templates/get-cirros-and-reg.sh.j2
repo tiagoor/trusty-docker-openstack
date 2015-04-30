@@ -1,0 +1,10 @@
+#!/bin/bash
+set -eux
+export OS_USERNAME=admin
+export OS_PASSWORD={{ openstack_admin_password }}
+export OS_TENANT_NAME=admin
+export OS_AUTH_URL=http://{{ keystone_ip }}:35357/v2.0
+[[ -f ./cirros-0.3.3-x86_64-disk.img ]] || wget http://cdn.download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img
+if ! (glance image-list | fgrep -q "cirros-0.3.3-x86_64"); then
+    glance image-create --name "cirros-0.3.3-x86_64" --disk-format qcow2 --container-format bare --is-public True --progress < cirros-0.3.3-x86_64-disk.img
+fi
