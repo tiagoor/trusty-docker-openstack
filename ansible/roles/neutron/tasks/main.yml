@@ -99,21 +99,8 @@
     keystone endpoint-create --service-id=$(keystone service-list | awk '/ network / {print $2}') --publicurl=http://{{ neutron_ip }}:9696 --internalurl=http://{{ neutron_ip }}:9696 --adminurl=http://{{ neutron_ip }}:9696
   when: neutron_exist|failed
 
-- name: create create virtual network script
-  shell: |
-    export script_file=/root/create-admin-network.sh
-    echo '#!/bin/bash' >  ${script_file}
-    echo 'set -eux'    >> ${script_file}
-    echo 'neutron net-create ext-net --shared --router:external=True' >> ${script_file}
-    echo 'neutron subnet-create ext-net --name ext-subnet --allocation-pool start={{ neutron_ext_subnet_allocation_pool_start }},end={{ neutron_ext_subnet_allocation_pool_end }} --disable-dhcp --gateway {{ neutron_ext_subnet_gateway }} {{ neutron_ext_subnet_cidr }}' >> ${script_file}
-    chmod a+x ${script_file}
-    export script_file=/root/create-demo-network.sh
-    echo '#!/bin/bash' >  ${script_file}
-    echo 'set -eux'    >> ${script_file}
-    echo 'neutron net-create demo-net' >> ${script_file}
-    echo 'neutron subnet-create demo-net --name demo-subnet --gateway {{ neutron_demo_subnet_gateway }} {{ neutron_demo_subnet_cidr }}' >> ${script_file}
-    echo 'neutron router-create demo-router' >> ${script_file}
-    echo 'neutron router-interface-add demo-router demo-subnet' >> ${script_file}
-    echo 'neutron router-gateway-set demo-router ext-net' >> ${script_file}
-    chmod a+x ${script_file}
-  when: neutron_exist|failed
+- name: install create virtual network script
+  template: src=create-sample-network.sh.j2 dest=/root/create-sample-network.sh mode=0755
+
+- name: install delete virtual network script
+  template: src=delete-sample-network.sh.j2 dest=/root/delete-sample-network.sh mode=0755

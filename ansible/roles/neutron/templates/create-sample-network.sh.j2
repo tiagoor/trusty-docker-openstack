@@ -1,0 +1,32 @@
+#!/bin/bash
+set -eux
+export OS_AUTH_URL=http://{{ keystone_ip }}:35357/v2.0
+export OS_TENANT_NAME=admin
+export OS_USERNAME=admin
+export OS_PASSWORD={{ openstack_admin_password }}
+if ! (neutron net-list | fgrep -q "ext-net"); then
+    neutron net-create ext-net --shared --router:external=True
+fi
+if ! (neutron subnet-list | fgrep -q "ext-subnet"); then
+    neutron subnet-create ext-net --name ext-subnet --allocation-pool \
+            start={{ neutron_ext_subnet_allocation_pool_start }},end={{ neutron_ext_subnet_allocation_pool_end }} \
+            --disable-dhcp \
+            --gateway {{ neutron_ext_subnet_gateway }} \
+            {{ neutron_ext_subnet_cidr }}
+fi
+export OS_TENANT_NAME=demo
+export OS_USERNAME=demo
+export OS_PASSWORD={{ openstack_demo_password }}
+if ! (neutron net-list | fgrep -q "demo-net"); then
+    neutron net-create demo-net
+fi
+if ! (neutron subnet-list | fgrep -q "demo-subnet"); then
+    neutron subnet-create demo-net --name demo-subnet \
+            --gateway {{ neutron_demo_subnet_gateway }} \
+            {{ neutron_demo_subnet_cidr }}
+fi
+if ! (neutron router-list | fgrep -q "demo-router"); then
+    neutron router-create demo-router
+    neutron router-interface-add demo-router demo-subnet
+    neutron router-gateway-set demo-router ext-net
+fi

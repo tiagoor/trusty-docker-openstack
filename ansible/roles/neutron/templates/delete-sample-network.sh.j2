@@ -1,0 +1,26 @@
+#!/bin/bash
+set -eux
+export OS_AUTH_URL=http://{{ keystone_ip }}:35357/v2.0
+export OS_TENANT_NAME=demo
+export OS_USERNAME=demo
+export OS_PASSWORD={{ openstack_demo_password }}
+if (neutron router-list | fgrep -q "demo-router"); then
+    neutron router-gateway-clear demo-router
+    neutron router-interface-delete demo-router demo-subnet
+    neutron router-delete demo-router
+fi
+if (neutron subnet-list | fgrep -q "demo-subnet"); then
+    neutron subnet-delete demo-subnet
+fi
+if (neutron net-list | fgrep -q "demo-net"); then
+    neutron net-delete demo-net
+fi
+export OS_TENANT_NAME=admin
+export OS_USERNAME=admin
+export OS_PASSWORD={{ openstack_admin_password }}
+if (neutron subnet-list | fgrep -q "ext-subnet"); then
+    neutron subnet-delete ext-subnet
+fi
+if (neutron net-list | fgrep -q "ext-net"); then
+    neutron net-delete ext-net
+fi
