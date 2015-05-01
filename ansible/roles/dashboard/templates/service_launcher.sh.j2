@@ -10,10 +10,11 @@ sed -i -e "s/^\(OPENSTACK_HOST\) *= *\"127\.0\.0\.1\"/\1 = \"${KEYSTONE_IP}\"/" 
 # ---------------------------------------------------------------------------
 # start service
 # ---------------------------------------------------------------------------
+[[ -f /etc/monit/conf.d/apache2   ]] || cp /etc/monit/monitrc.d/apache2   /etc/monit/conf.d/apache2
+[[ -f /etc/monit/conf.d/memcached ]] || cp /etc/monit/monitrc.d/memcached /etc/monit/conf.d/memcached
 rm -f /var/run/monit.pid
 rm -f /var/run/sshd.pid
 rm -f /var/run/apache2.pid
 rm -f /var/run/memcached.pid
-[[ -f /etc/monit/conf.d/apache2   ]] || cp /etc/monit/monitrc.d/apache2   /etc/monit/conf.d/apache2
-[[ -f /etc/monit/conf.d/memcached ]] || cp /etc/monit/monitrc.d/memcached /etc/monit/conf.d/memcached
+rm -f /var/lib/monit/state
 monit -I -c /etc/monit/monitrc

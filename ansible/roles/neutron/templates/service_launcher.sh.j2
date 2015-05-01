@@ -66,4 +66,5 @@ chown neutron:neutron /var/cache/neutron/
 rm -f /var/run/monit.pid
 rm -f /var/run/sshd.pid
 rm -f /var/run/neutron-server.pid
+rm -f /var/lib/monit/state
 monit -I -c /etc/monit/monitrc
