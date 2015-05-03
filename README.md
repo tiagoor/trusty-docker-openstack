@@ -4,7 +4,7 @@ OpenStack Demo for Ubuntu trusty by Ansible and Docker
 ## Abstract
 
 This Vagrantfile will deploy the OpenStack Icehouse envirionment on Ubuntu 14.04 LTS virtual machines with VirtualBox.
-OpenStack components that run on Controller uses Docker container.
+OpenStack components that run on *controller* uses Docker container.
 
 ![trusty-docker-openstack components and networks](https://raw.githubusercontent.com/kiyoad/trusty-docker-openstack/master/images/trusty-docker-openstack.gif)
 
@@ -51,7 +51,7 @@ https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-am
 
 1. run `vagrant up` and `vagrant reload`
 1. login to *controller* by `vagrant ssh controller`
-1. Install CirrOS by using script like this.
+1. Install the CirrOS by using script like this.
 
     ```
     vagrant@controller:~$ sudo su -
@@ -90,7 +90,7 @@ https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-am
     a2bb4840abc0        mysql:latest              /entrypoint.sh mysql   37 hours ago        Up 37 hours                             openstack-mysql
     ```
 
-1. OpenStack components logfiles in *controller* are in the following.
+1. The OpenStack components logfiles in *controller* are in the following.
 
     ```
     root@controller:~# ls -lR /var/log/openstack/
