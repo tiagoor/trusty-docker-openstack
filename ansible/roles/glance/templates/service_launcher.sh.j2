@@ -11,7 +11,7 @@ API_PORT=${API_PORT:-9292}
 REGISTRY_PORT=${REGISTRY_PORT:-9191}
 crudini --set /etc/glance/glance-api.conf      DEFAULT debug True
 crudini --set /etc/glance/glance-api.conf      DEFAULT verbose True
-crudini --set /etc/glance/glance-api.conf      keystone_authtoken signing_dir /var/cache/glance
+crudini --set /etc/glance/glance-api.conf      keystone_authtoken signing_dir /var/cache/glance/api
 crudini --set /etc/glance/glance-api.conf      keystone_authtoken auth_uri http://${KEYSTONE_IP}:5000/v2.0
 crudini --set /etc/glance/glance-api.conf      keystone_authtoken auth_host ${KEYSTONE_IP}
 crudini --set /etc/glance/glance-api.conf      keystone_authtoken auth_port 35357
@@ -24,7 +24,7 @@ crudini --set /etc/glance/glance-api.conf      DEFAULT bind_port ${API_PORT}
 crudini --set /etc/glance/glance-registry.conf DEFAULT debug True
 crudini --set /etc/glance/glance-registry.conf DEFAULT verbose True
 crudini --set /etc/glance/glance-registry.conf database connection mysql://glance:{{ glance_db_password }}@${GLANCE_DATABASE_IP}/glance
-crudini --set /etc/glance/glance-registry.conf keystone_authtoken signing_dir /var/cache/glance
+crudini --set /etc/glance/glance-registry.conf keystone_authtoken signing_dir /var/cache/glance/registry
 crudini --set /etc/glance/glance-registry.conf keystone_authtoken auth_uri http://${KEYSTONE_IP}:5000/v2.0
 crudini --set /etc/glance/glance-registry.conf keystone_authtoken auth_host ${KEYSTONE_IP}
 crudini --set /etc/glance/glance-registry.conf keystone_authtoken auth_port 35357
@@ -46,6 +46,10 @@ fi
 # ---------------------------------------------------------------------------
 mkdir -p /var/cache/glance
 chown glance:glance /var/cache/glance/
+mkdir -p /var/cache/glance/api
+chown glance:glance /var/cache/glance/api/
+mkdir -p /var/cache/glance/registry
+chown glance:glance /var/cache/glance/registry/
 # ---------------------------------------------------------------------------
 # start service
 # ---------------------------------------------------------------------------
