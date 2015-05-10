@@ -31,6 +31,7 @@
 
 - name: config Neutron settings
   shell: |
+    cp /etc/neutron/neutron.conf /etc/neutron/neutron.conf.prev
     crudini --set /etc/neutron/neutron.conf DEFAULT verbose True
     crudini --set /etc/neutron/neutron.conf DEFAULT debug True
     #crudini --set /etc/neutron/neutron.conf database connection mysql://neutron:{{ neutron_db_password }}@{{ openstack_database_ip }}/neutron
@@ -55,17 +56,22 @@
     mkdir -p /var/lock/neutron
     chown neutron:neutron /var/lock/neutron/
     crudini --set /etc/neutron/neutron.conf agent root_helper "sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf"
+    cp /etc/neutron/l3_agent.ini /etc/neutron/l3_agent.ini.prev
     crudini --set /etc/neutron/l3_agent.ini DEFAULT verbose True
     crudini --set /etc/neutron/l3_agent.ini DEFAULT debug True
     crudini --set /etc/neutron/l3_agent.ini DEFAULT interface_driver neutron.agent.linux.interface.OVSInterfaceDriver
     crudini --set /etc/neutron/l3_agent.ini DEFAULT root_helper "sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf"
+    cp /etc/neutron/dhcp_agent.ini /etc/neutron/dhcp_agent.ini.prev
     crudini --set /etc/neutron/dhcp_agent.ini DEFAULT verbose True
     crudini --set /etc/neutron/dhcp_agent.ini DEFAULT debug True
     crudini --set /etc/neutron/dhcp_agent.ini DEFAULT interface_driver neutron.agent.linux.interface.OVSInterfaceDriver
     crudini --set /etc/neutron/dhcp_agent.ini DEFAULT dnsmasq_config_file /etc/neutron/dnsmasq-neutron.conf
-    echo 'dhcp-option-force=26,1454' > /etc/neutron/dnsmasq-neutron.conf
-    killall dnsmasq
     crudini --set /etc/neutron/dhcp_agent.ini DEFAULT root_helper "sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf"
+    if [ ! -f /etc/neutron/dnsmasq-neutron.conf ]; then
+      echo 'dhcp-option-force=26,1454' > /etc/neutron/dnsmasq-neutron.conf
+      killall dnsmasq
+    fi
+    cp /etc/neutron/metadata_agent.ini /etc/neutron/metadata_agent.ini.prev
     crudini --set /etc/neutron/metadata_agent.ini DEFAULT verbose True
     crudini --set /etc/neutron/metadata_agent.ini DEFAULT debug True
     crudini --set /etc/neutron/metadata_agent.ini DEFAULT auth_url http://{{ keystone_ip }}:5000/v2.0
@@ -76,6 +82,7 @@
     crudini --set /etc/neutron/metadata_agent.ini DEFAULT nova_metadata_ip {{ nova_ip }}
     crudini --set /etc/neutron/metadata_agent.ini DEFAULT metadata_proxy_shared_secret {{ metadata_proxy_shared_secret }}
     crudini --set /etc/neutron/metadata_agent.ini DEFAULT root_helper "sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf"
+    cp /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugins/ml2/ml2_conf.ini.prev
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 type_drivers gre
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 tenant_network_types gre
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 mechanism_drivers openvswitch
@@ -87,11 +94,33 @@
     #crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini database connection mysql://neutron:{{ neutron_db_password }}@{{ openstack_database_ip }}/neutron
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini agent root_helper "sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf"
 
+- name: check change the settings
+  shell: diff -u /etc/neutron/neutron.conf.prev /etc/neutron/neutron.conf && diff -u /etc/neutron/plugins/ml2/ml2_conf.ini.prev /etc/neutron/plugins/ml2/ml2_conf.ini
+  register: equal
+  ignore_errors: True
+
+- name: check change the l3-agent settings
+  shell: diff -u /etc/neutron/l3_agent.ini.prev /etc/neutron/l3_agent.ini
+  register: equal_l3
+  ignore_errors: True
+
+- name: check change the dhcp-agent settings
+  shell: diff -u /etc/neutron/dhcp_agent.ini.prev /etc/neutron/dhcp_agent.ini
+  register: equal_dhcp
+  ignore_errors: True
+
+- name: check change the metadata-agent settings
+  shell: diff -u /etc/neutron/metadata_agent.ini.prev /etc/neutron/metadata_agent.ini
+  register: equal_metadata
+  ignore_errors: True
+
 - name: restart ovs
   shell: service openvswitch-switch restart
+  when: equal|failed
 
 - name: wait ovs
   shell: sleep 5
+  when: equal|failed
 
 - name: check br-int
   shell: ovs-vsctl list-br | grep -q br-int
@@ -116,12 +145,16 @@
 
 - name: restart neutron-plugin-openvswitch-agent service
   service: name=neutron-plugin-openvswitch-agent enabled=yes state=restarted
+  when: equal|failed or result|failed
 
 - name: restart neutron-l3-agent service
   service: name=neutron-l3-agent enabled=yes state=restarted
+  when: equal_l3|failed
 
 - name: restart neutron-dhcp-agent service
   service: name=neutron-dhcp-agent enabled=yes state=restarted
+  when: equal_dhcp|failed
 
 - name: restart neutron-metadata-agent service
   service: name=neutron-metadata-agent enabled=yes state=restarted
+  when: equal_metadata|failed

@@ -30,6 +30,7 @@
 
 - name: config Neutron settings
   shell: |
+    cp /etc/neutron/neutron.conf /etc/neutron/neutron.conf.prev
     crudini --set /etc/neutron/neutron.conf DEFAULT verbose True
     crudini --set /etc/neutron/neutron.conf DEFAULT debug True
     #crudini --set /etc/neutron/neutron.conf database connection mysql://neutron:{{ neutron_db_password }}@{{ openstack_database_ip }}/neutron
@@ -54,6 +55,7 @@
     mkdir -p /var/lock/neutron
     chown neutron:neutron /var/lock/neutron/
     crudini --set /etc/neutron/neutron.conf agent root_helper "sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf"
+    cp /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugins/ml2/ml2_conf.ini.prev
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 type_drivers gre
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 tenant_network_types gre
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 mechanism_drivers openvswitch
@@ -65,11 +67,18 @@
     #crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini database connection mysql://neutron:{{ neutron_db_password }}@{{ openstack_database_ip }}/neutron
     crudini --set /etc/neutron/plugins/ml2/ml2_conf.ini agent root_helper "sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf"
 
-- name: restart ovs
-  shell: service openvswitch-switch restart
+- name: check change the settings
+  shell: diff -u /etc/neutron/neutron.conf.prev /etc/neutron/neutron.conf && diff -u /etc/neutron/plugins/ml2/ml2_conf.ini.prev /etc/neutron/plugins/ml2/ml2_conf.ini
+  register: equal
+  ignore_errors: True
+
+- name: restart ovs service
+  service: name=openvswitch-switch enabled=yes state=restarted
+  when: equal|failed
 
 - name: wait ovs
   shell: sleep 5
+  when: equal|failed
 
 - name: check br-int
   shell: ovs-vsctl list-br | grep -q br-int
@@ -82,3 +91,4 @@
 
 - name: restart neutron-plugin-openvswitch-agent service
   service: name=neutron-plugin-openvswitch-agent enabled=yes state=restarted
+  when: equal|failed or result|failed
