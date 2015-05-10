@@ -6,6 +6,7 @@
 
 - name: config Nova settings
   shell: |
+   cp /etc/nova/nova.conf /etc/nova/nova.conf.prev
    crudini --set /etc/nova/nova.conf DEFAULT debug True
    crudini --set /etc/nova/nova.conf DEFAULT verbose True
    crudini --set /etc/nova/nova.conf DEFAULT rpc_backend rabbit
@@ -43,5 +44,11 @@
    crudini --set /etc/nova/nova-compute.conf libvirt virt_type qemu
    rm -rf /var/lib/nova/nova.sqlite
 
+- name: check change the settings
+  shell: diff -u /etc/nova/nova.conf.prev /etc/nova/nova.conf
+  register: equal
+  ignore_errors: True
+
 - name: restart nova-compute service
   service: name=nova-compute enabled=yes state=restarted
+  when: equal|failed

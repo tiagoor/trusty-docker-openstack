@@ -6,6 +6,7 @@
 
 - name: config Cinder settings
   shell: |
+   cp /etc/cinder/cinder.conf /etc/cinder/cinder.conf.prev
    crudini --set /etc/cinder/cinder.conf DEFAULT debug True
    crudini --set /etc/cinder/cinder.conf DEFAULT verbose True
    crudini --set /etc/cinder/cinder.conf DEFAULT rpc_backend rabbit
@@ -31,12 +32,19 @@
    crudini --set /etc/cinder/cinder.conf keystone_authtoken admin_user cinder
    crudini --set /etc/cinder/cinder.conf keystone_authtoken admin_password {{ cinder_password }}
 
+- name: check change the settings
+  shell: diff -u /etc/cinder/cinder.conf.prev /etc/cinder/cinder.conf
+  register: equal
+  ignore_errors: True
+
 - name: restart cinder-volume service
   service: name=cinder-volume enabled=yes state=restarted
+  when: equal|failed
 
 - name: restart tgt service
   #service: name=tgt enabled=yes state=restarted
   shell: initctl restart tgt
+  when: equal|failed
 
 - name: check restart cinder-volume in /etc/rc.local
   shell: fgrep -q cinder-volume /etc/rc.local
