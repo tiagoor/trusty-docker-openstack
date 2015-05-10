@@ -35,7 +35,8 @@
   service: name=cinder-volume enabled=yes state=restarted
 
 - name: restart tgt service
-  service: name=tgt enabled=yes state=restarted
+  #service: name=tgt enabled=yes state=restarted
+  shell: initctl restart tgt
 
 - name: check restart cinder-volume in /etc/rc.local
   shell: fgrep -q cinder-volume /etc/rc.local
