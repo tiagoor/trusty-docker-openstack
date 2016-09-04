@@ -1,10 +1,10 @@
 ---
 # Common settings
 
-openstack_database_ip: 10.0.0.11
+openstack_database_ip: 11.0.0.11
 database_root_password: password
 
-openstack_messaging_ip: 10.0.0.11
+openstack_messaging_ip: 11.0.0.11
 messaging_user: guest
 # Currently RabbitMQ password is not able to change.
 messaging_password: guest
@@ -17,36 +17,36 @@ openstack_admin_password: openstack
 openstack_demo_password: openstack
 
 keystone_docker_image: kiyoad/keystone
-keystone_ip: 10.0.0.11
+keystone_ip: 11.0.0.11
 keystone_admin_token: ADMIN_TOKEN
 keystone_db_password: KEYSTONE_DBPASS
 keystone_maintenance_ssh_port: 65501
 
 glance_docker_image: kiyoad/glance
-glance_ip: 10.0.0.11
+glance_ip: 11.0.0.11
 glance_password: GLANCE_PASS
 glance_db_password: GLANCE_DBPASS
 glance_maintenance_ssh_port: 65502
 
 nova_docker_image: kiyoad/nova
-nova_ip: 10.0.0.11
+nova_ip: 11.0.0.11
 nova_password: NOVA_PASS
 nova_db_password: NOVA_DBPASS
 nova_maintenance_ssh_port: 65503
 metadata_proxy_shared_secret: METADATA_SECRET
 
 neutron_docker_image: kiyoad/neutron
-neutron_ip: 10.0.0.11
+neutron_ip: 11.0.0.11
 neutron_password: NEUTRON_PASS
 neutron_db_password: NEUTRON_DBPASS
 neutron_maintenance_ssh_port: 65504
 
-neutron_ext_subnet_allocation_pool_start: 192.168.1.240
-neutron_ext_subnet_allocation_pool_end: 192.168.1.249
-neutron_ext_subnet_gateway: 192.168.1.1
-neutron_ext_subnet_cidr: 192.168.1.0/24
-neutron_demo_subnet_gateway: 192.168.99.1
-neutron_demo_subnet_cidr: 192.168.99.0/24
+neutron_ext_subnet_allocation_pool_start: 10.0.0.240
+neutron_ext_subnet_allocation_pool_end: 10.0.0.249
+neutron_ext_subnet_gateway: 10.0.1.1
+neutron_ext_subnet_cidr: 10.0.1.0/24
+neutron_demo_subnet_gateway: 10.0.99.1
+neutron_demo_subnet_cidr: 10.0.99.0/24
 
 dashboard_docker_image: kiyoad/dashboard
 dashboard_maintenance_ssh_port: 65505
