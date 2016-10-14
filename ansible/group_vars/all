@@ -43,8 +43,10 @@ neutron_maintenance_ssh_port: 65504
 
 neutron_ext_subnet_allocation_pool_start: 10.0.0.240
 neutron_ext_subnet_allocation_pool_end: 10.0.0.249
-neutron_ext_subnet_gateway: 10.0.1.1
-neutron_ext_subnet_cidr: 10.0.1.0/24
+#neutron_ext_subnet_gateway: 10.0.1.1
+neutron_ext_subnet_gateway: 10.0.0.1
+#eutron_ext_subnet_cidr: 10.0.1.0/24
+neutron_ext_subnet_cidr: 10.0.0.0/24
 neutron_demo_subnet_gateway: 10.0.99.1
 neutron_demo_subnet_cidr: 10.0.99.0/24
 
